@@ -1,0 +1,26 @@
+{
+  "version": "2.0",
+  "timestamp": "2024-01-15T10:35:00.000Z",
+  "total_records": 2,
+  "app_name": "Jasamarga Inspector",
+  "data": [
+    {
+      "id": "zip_test_001",
+      "timestamp": "2024-01-15T10:35:00.000Z",
+      "vehicle_number": "B1111AAA",
+      "inspection_type": "zip_test",
+      "notes": "File ZIP backup test",
+      "location": "Medan",
+      "inspector": "ZIP Test Inspector"
+    },
+    {
+      "id": "zip_test_002",
+      "timestamp": "2024-01-15T10:36:00.000Z",
+      "vehicle_number": "B2222BBB", 
+      "inspection_type": "zip_test",
+      "notes": "File ZIP backup test kedua",
+      "location": "Palembang",
+      "inspector": "ZIP Test Inspector 2"
+    }
+  ]
+}

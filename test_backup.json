@@ -1,0 +1,35 @@
+{
+  "version": "2.0",
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "total_records": 3,
+  "app_name": "Jasamarga Inspector",
+  "data": [
+    {
+      "id": "test_001",
+      "timestamp": "2024-01-15T10:30:00.000Z",
+      "vehicle_number": "B1234ABC",
+      "inspection_type": "test",
+      "notes": "File backup test untuk debugging",
+      "location": "Jakarta",
+      "inspector": "Test Inspector"
+    },
+    {
+      "id": "test_002", 
+      "timestamp": "2024-01-15T10:31:00.000Z",
+      "vehicle_number": "B5678DEF",
+      "inspection_type": "test",
+      "notes": "File backup test kedua",
+      "location": "Bandung",
+      "inspector": "Test Inspector 2"
+    },
+    {
+      "id": "test_003",
+      "timestamp": "2024-01-15T10:32:00.000Z", 
+      "vehicle_number": "B9999XYZ",
+      "inspection_type": "test",
+      "notes": "File backup test ketiga",
+      "location": "Surabaya",
+      "inspector": "Test Inspector 3"
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+name: jasamarga_inspector
+description: "JASAMARGA INSPECTOR - Sistem Inspeksi Kendaraan Terpadu untuk Jalan Layang Cikampek"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.0
+  http: ^1.2.2
+  pdf: ^3.11.3
+  printing: ^5.13.5
+  intl: ^0.19.0
+  syncfusion_flutter_pdf: ^24.2.9
+  shared_preferences: ^2.3.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  path_provider: ^2.1.5
+
+  image_picker: ^1.1.2
+  geolocator: ^10.1.0
+
+  signature: ^5.4.1
+  flutter_local_notifications: ^17.2.2
+  timezone: ^0.9.4
+  fl_chart: ^0.68.0
+  file_picker: ^10.3.1
+  share_plus: ^7.2.1
+  permission_handler: ^11.3.1
+  archive: ^3.4.10
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.5
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/logo_jjc.png
+    - assets/logoJJCW.png
+    - assets/onboard1.png
+    - assets/onboard2.png
+    - assets/onboard3.png
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/ron.png"
+  remove_alpha_ios: true
+  min_sdk_android: 21
+  # Konfigurasi untuk icon yang lebih bagus
+  adaptive_icon_background: "#2257C1"
+  adaptive_icon_foreground: "assets/ron.png"
+  # Hapus background yang mengganggu
+  remove_alpha_android: true
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false
+flutter_native_splash:
+  color: "#2257C1"
+  image: assets/ron.png
+  android: true
+  ios: true
+  web: false
+  image_dark: assets/ron.png
+  android_12:
+    image: assets/ron.png
+    color: "#2257C1"
+    icon_background_color: "#2257C1"
+

@@ -1,0 +1,35 @@
+{
+  "version": "2.0",
+  "timestamp": "2024-01-15T10:45:00.000Z",
+  "total_records": 3,
+  "app_name": "Jasamarga Inspector",
+  "data": [
+    {
+      "id": "zip_backup_001",
+      "timestamp": "2024-01-15T10:45:00.000Z",
+      "vehicle_number": "B7777GGG",
+      "inspection_type": "zip_backup_test",
+      "notes": "File ZIP backup dengan format yang benar",
+      "location": "Denpasar",
+      "inspector": "ZIP Backup Test Inspector"
+    },
+    {
+      "id": "zip_backup_002",
+      "timestamp": "2024-01-15T10:46:00.000Z",
+      "vehicle_number": "B8888HHH",
+      "inspection_type": "zip_backup_test",
+      "notes": "File ZIP backup kedua untuk testing",
+      "location": "Makassar",
+      "inspector": "ZIP Backup Test Inspector 2"
+    },
+    {
+      "id": "zip_backup_003",
+      "timestamp": "2024-01-15T10:47:00.000Z",
+      "vehicle_number": "B9999III",
+      "inspection_type": "zip_backup_test",
+      "notes": "File ZIP backup ketiga untuk memastikan scan berfungsi",
+      "location": "Manado",
+      "inspector": "ZIP Backup Test Inspector 3"
+    }
+  ]
+}

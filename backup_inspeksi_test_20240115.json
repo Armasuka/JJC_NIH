@@ -1,0 +1,44 @@
+{
+  "version": "2.0",
+  "timestamp": "2024-01-15T10:40:00.000Z",
+  "total_records": 4,
+  "app_name": "Jasamarga Inspector",
+  "data": [
+    {
+      "id": "backup_001",
+      "timestamp": "2024-01-15T10:40:00.000Z",
+      "vehicle_number": "B3333CCC",
+      "inspection_type": "backup_test",
+      "notes": "File backup dengan nama yang sesuai format",
+      "location": "Semarang",
+      "inspector": "Backup Test Inspector"
+    },
+    {
+      "id": "backup_002",
+      "timestamp": "2024-01-15T10:41:00.000Z",
+      "vehicle_number": "B4444DDD",
+      "inspection_type": "backup_test", 
+      "notes": "File backup kedua dengan format yang benar",
+      "location": "Yogyakarta",
+      "inspector": "Backup Test Inspector 2"
+    },
+    {
+      "id": "backup_003",
+      "timestamp": "2024-01-15T10:42:00.000Z",
+      "vehicle_number": "B5555EEE",
+      "inspection_type": "backup_test",
+      "notes": "File backup ketiga untuk testing scan",
+      "location": "Malang",
+      "inspector": "Backup Test Inspector 3"
+    },
+    {
+      "id": "backup_004",
+      "timestamp": "2024-01-15T10:43:00.000Z",
+      "vehicle_number": "B6666FFF",
+      "inspection_type": "backup_test",
+      "notes": "File backup keempat untuk memastikan scan berfungsi",
+      "location": "Solo",
+      "inspector": "Backup Test Inspector 4"
+    }
+  ]
+}
