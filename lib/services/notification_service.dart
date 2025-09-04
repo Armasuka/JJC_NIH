@@ -12,12 +12,14 @@ class NotificationService {
   factory NotificationService() => _instance;
   NotificationService._internal();
 
-  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notifications =
+      FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
     tz.initializeTimeZones();
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -53,7 +55,7 @@ class NotificationService {
   }) async {
     final now = DateTime.now();
     var scheduledDate = DateTime(now.year, now.month, now.day, hour, minute);
-    
+
     // If time has passed today, schedule for tomorrow
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
@@ -76,7 +78,8 @@ class NotificationService {
         iOS: DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
@@ -91,7 +94,7 @@ class NotificationService {
   }) async {
     final now = DateTime.now();
     var scheduledDate = _nextInstanceOfWeekday(weekday, hour, minute);
-    
+
     // If time has passed this week, schedule for next week
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 7));
@@ -114,12 +117,11 @@ class NotificationService {
         iOS: DarwinNotificationDetails(),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
     );
   }
-
-
 
   // Schedule specific vehicle inspection reminder
   Future<void> scheduleVehicleReminder({
@@ -129,11 +131,12 @@ class NotificationService {
     String? notes,
   }) async {
     final title = 'Inspeksi $vehicleType';
-    final body = 'Kendaraan $nopol perlu diinspeksi${notes != null ? ': $notes' : ''}';
-    
+    final body =
+        'Kendaraan $nopol perlu diinspeksi${notes != null ? ': $notes' : ''}';
+
     // Schedule 1 day before due date
     final reminderDate = dueDate.subtract(const Duration(days: 1));
-    
+
     if (reminderDate.isAfter(DateTime.now())) {
       await _notifications.zonedSchedule(
         DateTime.now().millisecondsSinceEpoch ~/ 1000, // Unique ID
@@ -152,7 +155,8 @@ class NotificationService {
           iOS: DarwinNotificationDetails(),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         payload: '$vehicleType|$nopol|${dueDate.toIso8601String()}',
       );
     }
@@ -162,10 +166,10 @@ class NotificationService {
   Future<void> scheduleMaintenanceReminder() async {
     final box = Hive.box('inspection_history');
     final inspections = box.values.toList();
-    
+
     // Group by vehicle type and nopol
     final vehicleGroups = <String, List<Map>>{};
-    
+
     for (var inspection in inspections) {
       if (inspection is Map) {
         final key = '${inspection['jenis']}_${inspection['nopol']}';
@@ -180,15 +184,15 @@ class NotificationService {
       if (inspections.isNotEmpty) {
         final lastInspection = inspections.first;
         final lastDate = DateTime.tryParse(lastInspection['tanggal'] ?? '');
-        
+
         if (lastDate != null) {
           final daysSinceLastInspection = now.difference(lastDate).inDays;
-          
+
           // Remind if more than 7 days since last inspection
           if (daysSinceLastInspection > 7) {
             final vehicleType = lastInspection['jenis'] ?? '';
             final nopol = lastInspection['nopol'] ?? '';
-            
+
             await scheduleVehicleReminder(
               vehicleType: vehicleType,
               nopol: nopol,
@@ -245,34 +249,35 @@ class NotificationService {
   DateTime _nextInstanceOfWeekday(int weekday, int hour, int minute) {
     final now = DateTime.now();
     var scheduledDate = DateTime(now.year, now.month, now.day, hour, minute);
-    
+
     while (scheduledDate.weekday != weekday) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
-    
+
     return scheduledDate;
   }
 
   // Check if notifications are enabled
   Future<bool> areNotificationsEnabled() async {
-    final androidImplementation = _notifications.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final androidImplementation =
+        _notifications.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
     return await androidImplementation?.areNotificationsEnabled() ?? false;
   }
 
-
-
   // Request notification permissions
   Future<bool> requestPermissions() async {
-    final androidImplementation = _notifications.resolvePlatformSpecificImplementation<
-        AndroidFlutterLocalNotificationsPlugin>();
+    final androidImplementation =
+        _notifications.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
     // For now, return true as requestPermission is not available in this version
     // In a real app, you might want to check areNotificationsEnabled() instead
     return await androidImplementation?.areNotificationsEnabled() ?? false;
   }
 
   // Generate detailed inspection table for PDF
-  pw.Widget generateInspectionDetailTable(List<Map> inspections, pw.Font font, pw.Font fontBold) {
+  pw.Widget generateInspectionDetailTable(
+      List<Map> inspections, pw.Font font, pw.Font fontBold) {
     return pw.Container(
       margin: const pw.EdgeInsets.only(bottom: 16),
       child: pw.Column(
@@ -295,18 +300,18 @@ class NotificationService {
             ),
           ),
           pw.SizedBox(height: 8),
-          
+
           // Table
           pw.Table(
             border: pw.TableBorder.all(width: 1, color: PdfColors.grey400),
             columnWidths: {
-              0: const pw.FixedColumnWidth(30),  // No
-              1: const pw.FixedColumnWidth(70),  // Tanggal
-              2: const pw.FixedColumnWidth(80),  // Jenis Kendaraan
-              3: const pw.FixedColumnWidth(80),  // Nopol
+              0: const pw.FixedColumnWidth(30), // No
+              1: const pw.FixedColumnWidth(70), // Tanggal
+              2: const pw.FixedColumnWidth(80), // Jenis Kendaraan
+              3: const pw.FixedColumnWidth(80), // Nopol
               4: const pw.FixedColumnWidth(100), // Lokasi
-              5: const pw.FixedColumnWidth(80),  // Petugas
-              6: const pw.FixedColumnWidth(60),  // Status
+              5: const pw.FixedColumnWidth(80), // Petugas
+              6: const pw.FixedColumnWidth(60), // Status
             },
             children: [
               // Header row
@@ -314,7 +319,8 @@ class NotificationService {
                 decoration: const pw.BoxDecoration(color: PdfColors.grey100),
                 children: [
                   pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                    padding: const pw.EdgeInsets.symmetric(
+                        vertical: 6, horizontal: 4),
                     child: pw.Center(
                       child: pw.Text(
                         'No',
@@ -327,7 +333,8 @@ class NotificationService {
                     ),
                   ),
                   pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                    padding: const pw.EdgeInsets.symmetric(
+                        vertical: 6, horizontal: 4),
                     child: pw.Center(
                       child: pw.Text(
                         'Tanggal',
@@ -340,7 +347,8 @@ class NotificationService {
                     ),
                   ),
                   pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                    padding: const pw.EdgeInsets.symmetric(
+                        vertical: 6, horizontal: 4),
                     child: pw.Center(
                       child: pw.Text(
                         'Jenis\nKendaraan',
@@ -354,7 +362,8 @@ class NotificationService {
                     ),
                   ),
                   pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                    padding: const pw.EdgeInsets.symmetric(
+                        vertical: 6, horizontal: 4),
                     child: pw.Center(
                       child: pw.Text(
                         'Nopol',
@@ -367,7 +376,8 @@ class NotificationService {
                     ),
                   ),
                   pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                    padding: const pw.EdgeInsets.symmetric(
+                        vertical: 6, horizontal: 4),
                     child: pw.Center(
                       child: pw.Text(
                         'Lokasi',
@@ -380,7 +390,8 @@ class NotificationService {
                     ),
                   ),
                   pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                    padding: const pw.EdgeInsets.symmetric(
+                        vertical: 6, horizontal: 4),
                     child: pw.Center(
                       child: pw.Text(
                         'Petugas',
@@ -393,7 +404,8 @@ class NotificationService {
                     ),
                   ),
                   pw.Container(
-                    padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                    padding: const pw.EdgeInsets.symmetric(
+                        vertical: 6, horizontal: 4),
                     child: pw.Center(
                       child: pw.Text(
                         'Status',
@@ -411,15 +423,17 @@ class NotificationService {
               ...inspections.asMap().entries.map((entry) {
                 final index = entry.key;
                 final inspection = entry.value;
-                final date = DateTime.tryParse(inspection['tanggal'] ?? '') ?? DateTime.now();
-                
+                final date = DateTime.tryParse(inspection['tanggal'] ?? '') ??
+                    DateTime.now();
+
                 return pw.TableRow(
                   decoration: pw.BoxDecoration(
                     color: index % 2 == 0 ? PdfColors.grey50 : PdfColors.white,
                   ),
                   children: [
                     pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                      padding: const pw.EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 4),
                       child: pw.Center(
                         child: pw.Text(
                           '${index + 1}',
@@ -428,7 +442,8 @@ class NotificationService {
                       ),
                     ),
                     pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                      padding: const pw.EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 4),
                       child: pw.Center(
                         child: pw.Text(
                           DateFormat('dd/MM/yyyy', 'id_ID').format(date),
@@ -437,7 +452,8 @@ class NotificationService {
                       ),
                     ),
                     pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                      padding: const pw.EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 4),
                       child: pw.Center(
                         child: pw.Text(
                           inspection['jenis'] ?? '-',
@@ -447,7 +463,8 @@ class NotificationService {
                       ),
                     ),
                     pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                      padding: const pw.EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 4),
                       child: pw.Center(
                         child: pw.Text(
                           inspection['nopol'] ?? '-',
@@ -456,7 +473,8 @@ class NotificationService {
                       ),
                     ),
                     pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                      padding: const pw.EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 4),
                       child: pw.Center(
                         child: pw.Text(
                           inspection['lokasi'] ?? '-',
@@ -465,7 +483,8 @@ class NotificationService {
                       ),
                     ),
                     pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                      padding: const pw.EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 4),
                       child: pw.Center(
                         child: pw.Text(
                           inspection['petugas1'] ?? '-',
@@ -474,13 +493,16 @@ class NotificationService {
                       ),
                     ),
                     pw.Container(
-                      padding: const pw.EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                      padding: const pw.EdgeInsets.symmetric(
+                          vertical: 4, horizontal: 4),
                       child: pw.Center(
                         child: pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          padding: const pw.EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
                           decoration: const pw.BoxDecoration(
                             color: PdfColors.green,
-                            borderRadius: pw.BorderRadius.all(pw.Radius.circular(12)),
+                            borderRadius:
+                                pw.BorderRadius.all(pw.Radius.circular(12)),
                           ),
                           child: pw.Text(
                             'Selesai',
@@ -495,7 +517,7 @@ class NotificationService {
                     ),
                   ],
                 );
-              }).toList(),
+              }),
             ],
           ),
         ],

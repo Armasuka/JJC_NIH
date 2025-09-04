@@ -20,17 +20,18 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, WidgetsBindingObserver {
+class _HomeScreenState extends State<HomeScreen>
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late AnimationController _logoAnimation;
   late AnimationController _buttonsAnimation;
   late AnimationController _backgroundAnimation;
   bool _hasDrafts = false;
-  
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
     _logoAnimation = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -43,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
       duration: const Duration(milliseconds: 3000),
       vsync: this,
     );
-    
+
     _startAnimations();
     _checkDrafts();
   }
@@ -68,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
       Logger.debug('Error checking drafts: $e');
     }
   }
-  
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
@@ -112,13 +113,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
               children: [
                 // Minimalist App Bar
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       IconButton(
                         icon: const Icon(
-                          Icons.help_outline_rounded, 
+                          Icons.help_outline_rounded,
                           color: Color(0xFF2257C1),
                           size: 22,
                         ),
@@ -138,15 +140,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                       const SizedBox(width: 8),
                       IconButton(
                         icon: const Icon(
-                          Icons.notifications_rounded, 
-                          color: Color(0xFF2257C1), 
+                          Icons.notifications_rounded,
+                          color: Color(0xFF2257C1),
                           size: 22,
                         ),
                         onPressed: () async {
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const NotificationSettingsScreen(),
+                              builder: (context) =>
+                                  const NotificationSettingsScreen(),
                             ),
                           );
                           if (mounted) {
@@ -176,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                             ),
                           ),
                           const SizedBox(height: 35),
-                          
+
                           // Main Action Buttons
                           FadeTransition(
                             opacity: _buttonsAnimation,
@@ -191,7 +194,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                                     await Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const KendaraanScreen(),
+                                        builder: (context) =>
+                                            const KendaraanScreen(),
                                       ),
                                     );
                                     if (mounted) {
@@ -209,7 +213,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                                     await Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const HistoryScreen(),
+                                        builder: (context) =>
+                                            const HistoryScreen(),
                                       ),
                                     );
                                     if (mounted) {
@@ -227,7 +232,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                                     await Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const BackupRestoreScreen(),
+                                        builder: (context) =>
+                                            const BackupRestoreScreen(),
                                       ),
                                     );
                                     if (mounted) {
@@ -238,19 +244,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                                 const SizedBox(height: 12),
                                 _buildActionButton(
                                   icon: Icons.drafts,
-                                  title: _hasDrafts ? 'Draft Tersimpan' : 'Draft',
-                                  subtitle: _hasDrafts 
-                                    ? 'Lanjutkan inspeksi yang tersimpan'
-                                    : 'Tidak ada draft tersimpan',
-                                  color: _hasDrafts ? const Color(0xFFE91E63) : const Color(0xFF9E9E9E),
-                                  onTap: _hasDrafts ? () {
-                                    _showDraftDialog();
-                                  } : null,
+                                  title:
+                                      _hasDrafts ? 'Draft Tersimpan' : 'Draft',
+                                  subtitle: _hasDrafts
+                                      ? 'Lanjutkan inspeksi yang tersimpan'
+                                      : 'Tidak ada draft tersimpan',
+                                  color: _hasDrafts
+                                      ? const Color(0xFFE91E63)
+                                      : const Color(0xFF9E9E9E),
+                                  onTap: _hasDrafts
+                                      ? () {
+                                          _showDraftDialog();
+                                        }
+                                      : null,
                                 ),
                               ],
                             ),
                           ),
-                          
+
                           const SizedBox(height: 30),
                         ],
                       ),
@@ -349,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
   void _showDraftDialog() async {
     try {
       final drafts = DraftService.getAllDrafts();
-      
+
       if (drafts.isEmpty) {
         if (mounted) {
           setState(() {
@@ -358,42 +369,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
         }
         return;
       }
-    
+
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Row(
+          title: const Row(
             children: [
               Icon(Icons.drafts, color: Color(0xFFE91E63)),
               SizedBox(width: 8),
               Text('Draft Tersimpan'),
             ],
           ),
-          content: Container(
+          content: SizedBox(
             width: double.maxFinite,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text('Pilih draft yang ingin dilanjutkan:'),
-                SizedBox(height: 16),
+                const Text('Pilih draft yang ingin dilanjutkan:'),
+                const SizedBox(height: 16),
                 ...drafts.map((draft) {
                   final draftData = draft['data'] as Map<String, dynamic>;
                   final formType = draftData['formType'] ?? 'Unknown';
                   final petugas1 = draftData['petugas1'] ?? 'Tidak ada';
                   final timestamp = draftData['timestamp'] ?? '';
-                  
+
                   String formattedDate = '';
                   if (timestamp.isNotEmpty) {
                     try {
                       final date = DateTime.parse(timestamp);
-                      formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(date);
+                      formattedDate =
+                          DateFormat('dd/MM/yyyy HH:mm').format(date);
                     } catch (e) {
                       formattedDate = 'Tanggal tidak valid';
                     }
                   }
-                  
+
                   return Container(
-                    margin: EdgeInsets.only(bottom: 8),
+                    margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
                       leading: Icon(
                         _getFormIcon(formType),
@@ -407,7 +419,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                           Text('Tanggal: $formattedDate'),
                         ],
                       ),
-                      trailing: Icon(Icons.arrow_forward_ios, size: 16),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                       onTap: () async {
                         Navigator.pop(context);
                         _openDraft(draft['key'] as String, draftData);
@@ -417,7 +429,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                       },
                     ),
                   );
-                }).toList(),
+                }),
               ],
             ),
           ),
@@ -429,7 +441,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
                   _checkDrafts();
                 }
               },
-              child: Text('Batal'),
+              child: const Text('Batal'),
             ),
           ],
         ),
@@ -459,43 +471,48 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin, 
   Color _getFormColor(String formType) {
     switch (formType.toLowerCase()) {
       case 'ambulance':
-        return Color(0xFFE74C3C);
+        return const Color(0xFFE74C3C);
       case 'derek':
-        return Color(0xFF3498DB);
+        return const Color(0xFF3498DB);
       case 'plaza':
-        return Color(0xFF2ECC71);
+        return const Color(0xFF2ECC71);
       case 'kamtib':
-        return Color(0xFF9B59B6);
+        return const Color(0xFF9B59B6);
       case 'rescue':
-        return Color(0xFFF39C12);
+        return const Color(0xFFF39C12);
       default:
-        return Color(0xFF9E9E9E);
+        return const Color(0xFF9E9E9E);
     }
   }
 
   void _openDraft(String draftKey, Map<String, dynamic> draftData) async {
     try {
       final formType = draftData['formType'] ?? '';
-    
+
       Widget? targetScreen;
       switch (formType.toLowerCase()) {
         case 'ambulance':
-          targetScreen = ambulance.FormAmbulanceScreen(draftData: draftData, draftKey: draftKey);
+          targetScreen = ambulance.FormAmbulanceScreen(
+              draftData: draftData, draftKey: draftKey);
           break;
         case 'derek':
-          targetScreen = FormDerekScreen(draftData: draftData, draftKey: draftKey);
+          targetScreen =
+              FormDerekScreen(draftData: draftData, draftKey: draftKey);
           break;
         case 'kamtib':
-          targetScreen = FormKamtibScreen(draftData: draftData, draftKey: draftKey);
+          targetScreen =
+              FormKamtibScreen(draftData: draftData, draftKey: draftKey);
           break;
         case 'plaza':
-          targetScreen = FormPlazaScreen(draftData: draftData, draftKey: draftKey);
+          targetScreen =
+              FormPlazaScreen(draftData: draftData, draftKey: draftKey);
           break;
         case 'rescue':
-          targetScreen = FormRescueScreen(draftData: draftData, draftKey: draftKey);
+          targetScreen =
+              FormRescueScreen(draftData: draftData, draftKey: draftKey);
           break;
       }
-    
+
       if (targetScreen != null) {
         await Navigator.push(
           context,

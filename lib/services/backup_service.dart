@@ -8,30 +8,31 @@ import 'pdf_storage_service.dart';
 
 class BackupService {
   static const String _backupBoxName = 'backup_schedule';
-  
+
   // Cek apakah perlu melakukan auto-backup
   static Future<bool> shouldPerformAutoBackup() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final autoBackupEnabled = prefs.getBool('auto_backup_enabled') ?? false;
-      
+
       if (!autoBackupEnabled) return false;
-      
+
       final lastBackupTime = prefs.getString('last_auto_backup_time');
       final backupFrequency = prefs.getString('backup_frequency') ?? 'weekly';
       final backupHour = prefs.getInt('backup_time_hour') ?? 20;
       final backupMinute = prefs.getInt('backup_time_minute') ?? 0;
-      
+
       if (lastBackupTime == null) {
         // Belum pernah backup, cek apakah sudah waktunya
         final now = DateTime.now();
-        final backupTime = DateTime(now.year, now.month, now.day, backupHour, backupMinute);
+        final backupTime =
+            DateTime(now.year, now.month, now.day, backupHour, backupMinute);
         return now.isAfter(backupTime);
       }
-      
+
       final lastBackup = DateTime.parse(lastBackupTime);
       final now = DateTime.now();
-      
+
       // Cek apakah sudah waktunya untuk backup berikutnya
       switch (backupFrequency) {
         case 'daily':
@@ -48,22 +49,22 @@ class BackupService {
       return false;
     }
   }
-  
+
   // Lakukan auto-backup
   static Future<bool> performAutoBackup() async {
     try {
       // Ambil data dari Hive
       final box = Hive.box('inspection_history');
       final data = box.values.toList();
-      
+
       if (data.isEmpty) {
         print('No data to backup');
         return true;
       }
-      
+
       // Analisis data
       final dataAnalysis = _analyzeBackupData(data);
-      
+
       // Buat backup data
       final backupData = {
         'version': '2.1',
@@ -80,27 +81,28 @@ class BackupService {
         },
         'data': data,
       };
-      
+
       final jsonData = jsonEncode(backupData);
       final jsonBytes = utf8.encode(jsonData);
-      
+
       // Dapatkan direktori backup
       final backupDir = await _getBackupDirectory();
       if (backupDir == null) {
         throw Exception('Cannot access backup directory');
       }
-      
+
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = 'auto_backup_inspeksi_${DateTime.now().year}${DateTime.now().month.toString().padLeft(2, '0')}${DateTime.now().day.toString().padLeft(2, '0')}_${timestamp}.zip';
+      final fileName =
+          'auto_backup_inspeksi_${DateTime.now().year}${DateTime.now().month.toString().padLeft(2, '0')}${DateTime.now().day.toString().padLeft(2, '0')}_$timestamp.zip';
       final file = File('${backupDir.path}/$fileName');
-      
+
       // Buat ZIP archive
       final archive = Archive();
-      
+
       // Tambahkan file data.json
       final dataFile = ArchiveFile('data.json', jsonBytes.length, jsonBytes);
       archive.addFile(dataFile);
-      
+
       // Tambahkan file PDF
       final pdfFiles = await PdfStorageService.getAllPdfFiles();
       int pdfCount = 0;
@@ -108,14 +110,15 @@ class BackupService {
         try {
           final pdfBytes = await pdfFile.readAsBytes();
           final fileName = pdfFile.path.split('/').last;
-          final pdfArchiveFile = ArchiveFile('pdfs/$fileName', pdfBytes.length, pdfBytes);
+          final pdfArchiveFile =
+              ArchiveFile('pdfs/$fileName', pdfBytes.length, pdfBytes);
           archive.addFile(pdfArchiveFile);
           pdfCount++;
         } catch (e) {
           print('Error adding PDF file ${pdfFile.path}: $e');
         }
       }
-      
+
       // Tambahkan metadata
       final metadata = '''
 Jasamarga Inspector - Auto Backup Data v2.1
@@ -135,21 +138,23 @@ ${dataAnalysis['total_vehicles']}
 File ini dibuat secara otomatis oleh sistem backup.
         ''';
       final metadataBytes = utf8.encode(metadata);
-      final metadataFile = ArchiveFile('metadata.txt', metadataBytes.length, metadataBytes);
+      final metadataFile =
+          ArchiveFile('metadata.txt', metadataBytes.length, metadataBytes);
       archive.addFile(metadataFile);
-      
+
       // Encode dan tulis ZIP
       final zipData = ZipEncoder().encode(archive);
       if (zipData == null) {
         throw Exception('Failed to create ZIP file');
       }
-      
+
       await file.writeAsBytes(zipData);
-      
+
       // Update last backup time
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('last_auto_backup_time', DateTime.now().toIso8601String());
-      
+      await prefs.setString(
+          'last_auto_backup_time', DateTime.now().toIso8601String());
+
       print('Auto-backup completed: ${file.path}');
       return true;
     } catch (e) {
@@ -157,7 +162,7 @@ File ini dibuat secara otomatis oleh sistem backup.
       return false;
     }
   }
-  
+
   // Mendapatkan direktori backup
   static Future<Directory?> _getBackupDirectory() async {
     try {
@@ -169,7 +174,7 @@ File ini dibuat secara otomatis oleh sistem backup.
         }
         return backupDir;
       }
-      
+
       final appDir = await getApplicationDocumentsDirectory();
       final backupDir = Directory('${appDir.path}/backup');
       if (!await backupDir.exists()) {
@@ -181,7 +186,7 @@ File ini dibuat secara otomatis oleh sistem backup.
       return null;
     }
   }
-  
+
   // Analisis data backup
   static Map<String, String> _analyzeBackupData(List data) {
     if (data.isEmpty) {
@@ -220,12 +225,12 @@ File ini dibuat secara otomatis oleh sistem backup.
       dates.sort();
       final startDate = dates.first;
       final endDate = dates.last;
-      periodRange = 'Periode: ${startDate.day}/${startDate.month}/${startDate.year} - ${endDate.day}/${endDate.month}/${endDate.year}';
+      periodRange =
+          'Periode: ${startDate.day}/${startDate.month}/${startDate.year} - ${endDate.day}/${endDate.month}/${endDate.year}';
     }
 
-    final vehicleTypesStr = vehicleTypes.entries
-        .map((e) => '${e.key}: ${e.value}')
-        .join(', ');
+    final vehicleTypesStr =
+        vehicleTypes.entries.map((e) => '${e.key}: ${e.value}').join(', ');
 
     return {
       'period_range': periodRange,
@@ -233,22 +238,23 @@ File ini dibuat secara otomatis oleh sistem backup.
       'total_vehicles': 'Total kendaraan unik: ${vehicles.length}',
     };
   }
-  
+
   // Cleanup backup files lama (hapus yang lebih dari 30 hari)
   static Future<void> cleanupOldBackups() async {
     try {
       final backupDir = await _getBackupDirectory();
       if (backupDir == null) return;
-      
+
       final files = await backupDir.list().toList();
       final now = DateTime.now();
-      
+
       for (final file in files) {
-        if (file is File && (file.path.endsWith('.zip') || file.path.endsWith('.json'))) {
+        if (file is File &&
+            (file.path.endsWith('.zip') || file.path.endsWith('.json'))) {
           try {
             final stat = await file.stat();
             final daysOld = now.difference(stat.modified).inDays;
-            
+
             if (daysOld > 30) {
               await file.delete();
               print('Deleted old backup file: ${file.path}');

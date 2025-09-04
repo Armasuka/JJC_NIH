@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:permission_handler/permission_handler.dart' show openAppSettings;
+import 'package:permission_handler/permission_handler.dart'
+    show openAppSettings;
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'dart:io';
@@ -15,7 +16,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class BackupRestoreScreen extends StatefulWidget {
   final File? initialFile;
-  const BackupRestoreScreen({Key? key, this.initialFile}) : super(key: key);
+  const BackupRestoreScreen({super.key, this.initialFile});
 
   @override
   State<BackupRestoreScreen> createState() => _BackupRestoreScreenState();
@@ -52,7 +53,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
         }
         return backupDir;
       }
-      
+
       // Fallback ke application documents directory
       final appDir = await getApplicationDocumentsDirectory();
       final backupDir = Directory('${appDir.path}/backup');
@@ -75,33 +76,34 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
     try {
       // Minta permission storage terlebih dahulu
       final hasPermission = await _requestStoragePermission();
-              if (!hasPermission) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Row(
-                  children: [
-                    const Icon(Icons.error, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: const Text('Permission storage diperlukan untuk backup data. Silakan berikan permission di pengaturan aplikasi.'),
-                    ),
-                  ],
-                ),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 6),
-                action: SnackBarAction(
-                  label: 'Pengaturan',
-                  textColor: Colors.white,
-                  onPressed: () {
-                    openAppSettings();
-                  },
-                ),
+      if (!hasPermission) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Row(
+                children: [
+                  Icon(Icons.error, color: Colors.white),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                        'Permission storage diperlukan untuk backup data. Silakan berikan permission di pengaturan aplikasi.'),
+                  ),
+                ],
               ),
-            );
-          }
-          return;
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 6),
+              action: SnackBarAction(
+                label: 'Pengaturan',
+                textColor: Colors.white,
+                onPressed: () {
+                  openAppSettings();
+                },
+              ),
+            ),
+          );
         }
+        return;
+      }
 
       // Ambil data dari Hive
       final box = Hive.box('inspection_history');
@@ -110,18 +112,18 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
       if (data.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Row(
                 children: [
-                  const Icon(Icons.info, color: Colors.white),
-                  const SizedBox(width: 8),
+                  Icon(Icons.info, color: Colors.white),
+                  SizedBox(width: 8),
                   Expanded(
-                    child: const Text('Tidak ada data untuk di-backup'),
+                    child: Text('Tidak ada data untuk di-backup'),
                   ),
                 ],
               ),
               backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 3),
+              duration: Duration(seconds: 3),
             ),
           );
         }
@@ -130,7 +132,7 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
 
       // Analisis data untuk metadata yang lebih lengkap
       final dataAnalysis = _analyzeBackupData(data);
-      
+
       // Convert ke JSON dengan format yang lebih baik
       final backupData = {
         'version': '2.1',
@@ -146,20 +148,22 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
         },
         'data': data,
       };
-      
+
       final jsonData = jsonEncode(backupData);
       final jsonBytes = utf8.encode(jsonData);
 
       // Dapatkan direktori backup
       final backupDir = await _getBackupDirectory();
       if (backupDir == null) {
-        throw Exception('Tidak dapat mengakses direktori backup. Pastikan aplikasi memiliki permission storage dan coba lagi.');
+        throw Exception(
+            'Tidak dapat mengakses direktori backup. Pastikan aplikasi memiliki permission storage dan coba lagi.');
       }
-      
+
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final fileName = 'backup_inspeksi_${DateTime.now().year}${DateTime.now().month.toString().padLeft(2, '0')}${DateTime.now().day.toString().padLeft(2, '0')}_${timestamp}.zip';
+      final fileName =
+          'backup_inspeksi_${DateTime.now().year}${DateTime.now().month.toString().padLeft(2, '0')}${DateTime.now().day.toString().padLeft(2, '0')}_$timestamp.zip';
       final file = File('${backupDir.path}/$fileName');
-      
+
       // Coba simpan ke Downloads folder agar muncul di Recent Files
       Directory? downloadsDir;
       try {
@@ -177,11 +181,11 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
       try {
         // Buat ZIP archive
         final archive = Archive();
-        
+
         // Tambahkan file data.json ke archive
         final dataFile = ArchiveFile('data.json', jsonBytes.length, jsonBytes);
         archive.addFile(dataFile);
-        
+
         // Tambahkan file PDF ke archive
         final pdfFiles = await PdfStorageService.getAllPdfFiles();
         int pdfCount = 0;
@@ -189,14 +193,15 @@ class _BackupRestoreScreenState extends State<BackupRestoreScreen> {
           try {
             final pdfBytes = await pdfFile.readAsBytes();
             final fileName = pdfFile.path.split('/').last;
-            final pdfArchiveFile = ArchiveFile('pdfs/$fileName', pdfBytes.length, pdfBytes);
+            final pdfArchiveFile =
+                ArchiveFile('pdfs/$fileName', pdfBytes.length, pdfBytes);
             archive.addFile(pdfArchiveFile);
             pdfCount++;
           } catch (e) {
             print('Error adding PDF file ${pdfFile.path}: $e');
           }
         }
-        
+
         // Tambahkan file metadata.txt yang lebih informatif
         final metadata = '''
 Jasamarga Inspector - Backup Data v2.1
@@ -231,18 +236,19 @@ File ini berisi data inspeksi kendaraan dan file PDF yang telah di-backup.
 Jangan edit atau hapus file ini jika ingin data tetap aman.
         ''';
         final metadataBytes = utf8.encode(metadata);
-        final metadataFile = ArchiveFile('metadata.txt', metadataBytes.length, metadataBytes);
+        final metadataFile =
+            ArchiveFile('metadata.txt', metadataBytes.length, metadataBytes);
         archive.addFile(metadataFile);
-        
+
         // Encode ZIP
         final zipData = ZipEncoder().encode(archive);
         if (zipData == null) {
           throw Exception('Gagal membuat file ZIP');
         }
-        
+
         // Tulis file ZIP
         await file.writeAsBytes(zipData);
-        
+
         // Jika berhasil, coba copy ke Downloads folder
         if (downloadsDir != null) {
           try {
@@ -254,7 +260,8 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
           }
         }
       } catch (e) {
-        throw Exception('Tidak dapat menulis file backup: ${e.toString()}. Pastikan ada ruang penyimpanan yang cukup.');
+        throw Exception(
+            'Tidak dapat menulis file backup: ${e.toString()}. Pastikan ada ruang penyimpanan yang cukup.');
       }
 
       // Hitung ukuran file
@@ -262,18 +269,21 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
       try {
         fileSize = await file.length();
       } catch (e) {
-        throw Exception('Tidak dapat menghitung ukuran file backup: ${e.toString()}');
+        throw Exception(
+            'Tidak dapat menghitung ukuran file backup: ${e.toString()}');
       }
       final sizeInKB = (fileSize / 1024).toStringAsFixed(1);
-      
+
       if (fileSize == 0) {
-        throw Exception('File backup berhasil dibuat tetapi ukurannya 0 bytes. Kemungkinan ada masalah dengan penyimpanan.');
+        throw Exception(
+            'File backup berhasil dibuat tetapi ukurannya 0 bytes. Kemungkinan ada masalah dengan penyimpanan.');
       }
 
       // Simpan path backup untuk ditampilkan dan refresh jumlah data
       setState(() {
-        _lastBackupPath = downloadsDir != null ? '${downloadsDir.path}/$fileName' : file.path;
-        _lastBackupSize = '${sizeInKB} KB';
+        _lastBackupPath =
+            downloadsDir != null ? '${downloadsDir.path}/$fileName' : file.path;
+        _lastBackupSize = '$sizeInKB KB';
         _totalRecords = data.length;
       });
 
@@ -297,13 +307,14 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                     children: [
                       Text('Backup berhasil! File: $fileName (ZIP)'),
                       if (downloadsDir != null)
-                        Text(
+                        const Text(
                           'Tersimpan di Downloads folder',
                           style: TextStyle(fontSize: 12, color: Colors.white70),
                         ),
                       Text(
                         'Data: ${data.length} records, ${dataAnalysis['period_range']}',
-                        style: TextStyle(fontSize: 11, color: Colors.white70),
+                        style: const TextStyle(
+                            fontSize: 11, color: Colors.white70),
                       ),
                     ],
                   ),
@@ -312,17 +323,22 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                 TextButton(
                   onPressed: () async {
                     try {
-                      final shareFile = downloadsDir != null ? File('${downloadsDir.path}/$fileName') : file;
+                      final shareFile = downloadsDir != null
+                          ? File('${downloadsDir.path}/$fileName')
+                          : file;
                       await Share.shareXFiles(
                         [XFile(shareFile.path)],
-                        text: 'Backup inspeksi Jasamarga Inspector: $fileName\n\nFile ini berisi data inspeksi kendaraan yang telah di-backup. Buka dengan aplikasi Jasamarga Inspector untuk restore data.',
+                        text:
+                            'Backup inspeksi Jasamarga Inspector: $fileName\n\nFile ini berisi data inspeksi kendaraan yang telah di-backup. Buka dengan aplikasi Jasamarga Inspector untuk restore data.',
                         subject: 'Backup Data Inspeksi Jasamarga Inspector',
                       );
                     } catch (_) {}
                   },
                   child: const Text(
                     'Bagikan',
-                    style: TextStyle(color: Colors.white, decoration: TextDecoration.underline),
+                    style: TextStyle(
+                        color: Colors.white,
+                        decoration: TextDecoration.underline),
                   ),
                 ),
               ],
@@ -410,13 +426,13 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
       dates.sort();
       final startDate = dates.first;
       final endDate = dates.last;
-      periodRange = 'Periode: ${startDate.day}/${startDate.month}/${startDate.year} - ${endDate.day}/${endDate.month}/${endDate.year}';
+      periodRange =
+          'Periode: ${startDate.day}/${startDate.month}/${startDate.year} - ${endDate.day}/${endDate.month}/${endDate.year}';
     }
 
     // Format jenis kendaraan
-    final vehicleTypesStr = vehicleTypes.entries
-        .map((e) => '${e.key}: ${e.value}')
-        .join(', ');
+    final vehicleTypesStr =
+        vehicleTypes.entries.map((e) => '${e.key}: ${e.value}').join(', ');
 
     return {
       'period_range': periodRange,
@@ -609,71 +625,78 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
 
     try {
       if (!await file.exists()) {
-        throw Exception('File yang dipilih tidak ditemukan atau tidak dapat diakses');
+        throw Exception(
+            'File yang dipilih tidak ditemukan atau tidak dapat diakses');
       }
-      
+
       int fileSize;
       try {
         fileSize = await file.length();
       } catch (e) {
-        throw Exception('Tidak dapat menghitung ukuran file yang dipilih: ${e.toString()}');
+        throw Exception(
+            'Tidak dapat menghitung ukuran file yang dipilih: ${e.toString()}');
       }
       final sizeInKB = (fileSize / 1024).toStringAsFixed(1);
-      
+
       // Cek ukuran file (maksimal 10MB)
       if (fileSize > 10 * 1024 * 1024) {
-        throw Exception('File terlalu besar (${(fileSize / 1024 / 1024).toStringAsFixed(1)} MB). Maksimal 10MB.');
+        throw Exception(
+            'File terlalu besar (${(fileSize / 1024 / 1024).toStringAsFixed(1)} MB). Maksimal 10MB.');
       }
-      
+
       // Cek ukuran file (minimal 10 bytes)
       if (fileSize < 10) {
-        throw Exception('File terlalu kecil (${fileSize} bytes). File backup harus minimal 10 bytes.');
+        throw Exception(
+            'File terlalu kecil ($fileSize bytes). File backup harus minimal 10 bytes.');
       }
-      
-                if (mounted) {
-            final fileExtension = file.path.split('.').last.toLowerCase();
-            final formatType = fileExtension == 'zip' ? 'ZIP' : 'JSON';
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('File dipilih: ${file.path.split('/').last} ($sizeInKB KB, $formatType)'),
-                backgroundColor: Colors.blue,
-                duration: const Duration(seconds: 2),
-              ),
-            );
-          }
-      
+
+      if (mounted) {
+        final fileExtension = file.path.split('.').last.toLowerCase();
+        final formatType = fileExtension == 'zip' ? 'ZIP' : 'JSON';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'File dipilih: ${file.path.split('/').last} ($sizeInKB KB, $formatType)'),
+            backgroundColor: Colors.blue,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+
       // Cek apakah file ZIP atau JSON
       final fileExtension = file.path.split('.').last.toLowerCase();
       dynamic backupData;
-      
+
       if (fileExtension == 'zip') {
         // Proses file ZIP
         try {
           final zipBytes = await file.readAsBytes();
           final archive = ZipDecoder().decodeBytes(zipBytes);
-          
+
           // Cari file data.json dalam archive
           final dataFile = archive.findFile('data.json');
           if (dataFile == null) {
-            throw Exception('File ZIP tidak mengandung data.json. Pastikan file adalah backup yang valid.');
+            throw Exception(
+                'File ZIP tidak mengandung data.json. Pastikan file adalah backup yang valid.');
           }
-          
+
           final jsonString = utf8.decode(dataFile.content as List<int>);
           if (jsonString.isEmpty) {
-            throw Exception('File data.json dalam ZIP kosong. Pastikan file backup tidak rusak.');
+            throw Exception(
+                'File data.json dalam ZIP kosong. Pastikan file backup tidak rusak.');
           }
-          
+
           backupData = jsonDecode(jsonString);
-          
+
           // Tampilkan informasi metadata jika ada
           final metadataFile = archive.findFile('metadata.txt');
           if (metadataFile != null) {
             final metadata = utf8.decode(metadataFile.content as List<int>);
             print('Metadata backup: $metadata');
           }
-          
         } catch (e) {
-          throw Exception('Tidak dapat membaca file ZIP: ${e.toString()}. Pastikan file adalah backup yang valid.');
+          throw Exception(
+              'Tidak dapat membaca file ZIP: ${e.toString()}. Pastikan file adalah backup yang valid.');
         }
       } else {
         // Proses file JSON (legacy support)
@@ -681,28 +704,31 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
         try {
           jsonString = await file.readAsString(encoding: utf8);
         } catch (e) {
-          throw Exception('Tidak dapat membaca file yang dipilih: ${e.toString()}. Pastikan file tidak rusak.');
+          throw Exception(
+              'Tidak dapat membaca file yang dipilih: ${e.toString()}. Pastikan file tidak rusak.');
         }
         if (jsonString.isEmpty) {
-          throw Exception('File backup kosong atau tidak dapat dibaca. Ukuran file: ${fileSize} bytes. Pastikan file tidak kosong.');
+          throw Exception(
+              'File backup kosong atau tidak dapat dibaca. Ukuran file: $fileSize bytes. Pastikan file tidak kosong.');
         }
-        
+
         try {
           backupData = jsonDecode(jsonString);
         } catch (e) {
-          throw Exception('File backup tidak valid JSON: ${e.toString()}. Pastikan file adalah file backup yang valid dan tidak rusak.');
+          throw Exception(
+              'File backup tidak valid JSON: ${e.toString()}. Pastikan file adalah file backup yang valid dan tidak rusak.');
         }
       }
 
       // Handle format backup yang baru dan lama
       List data;
       String backupVersion = 'Unknown';
-      
+
       if (backupData is Map && backupData.containsKey('data')) {
         // Format baru dengan metadata
         data = backupData['data'] as List;
         backupVersion = backupData['version'] ?? '1.0';
-        
+
         // Tampilkan informasi versi
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -717,22 +743,24 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
         // Format lama
         data = backupData;
         backupVersion = 'Legacy';
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Format backup legacy terdeteksi'),
+            const SnackBar(
+              content: Text('Format backup legacy terdeteksi'),
               backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 2),
+              duration: Duration(seconds: 2),
             ),
           );
         }
       } else {
-        throw Exception('Format file backup tidak valid. File harus berisi array JSON atau object dengan field "data". Tipe data terdeteksi: ${backupData.runtimeType}. Pastikan file adalah file backup yang dibuat oleh aplikasi ini dan tidak dimodifikasi.');
+        throw Exception(
+            'Format file backup tidak valid. File harus berisi array JSON atau object dengan field "data". Tipe data terdeteksi: ${backupData.runtimeType}. Pastikan file adalah file backup yang dibuat oleh aplikasi ini dan tidak dimodifikasi.');
       }
 
       if (data.isEmpty) {
-        throw Exception('File backup tidak mengandung data atau format data tidak valid. Jumlah records: ${data.length}. Pastikan file backup tidak kosong dan berisi data inspeksi yang valid.');
+        throw Exception(
+            'File backup tidak mengandung data atau format data tidak valid. Jumlah records: ${data.length}. Pastikan file backup tidak kosong dan berisi data inspeksi yang valid.');
       }
 
       // Tampilkan informasi jumlah records dan timestamp
@@ -749,12 +777,13 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
             );
           }
         }
-        
+
         if (backupData.containsKey('timestamp')) {
           final timestamp = backupData['timestamp'];
           try {
             final dateTime = DateTime.parse(timestamp);
-            final dateStr = '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+            final dateStr =
+                '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -775,72 +804,75 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
       int newCount = 0;
       int duplicateCount = 0;
       String restorePrefix = '';
-      
-              try {
-          if (mode == 'replace') {
-            // Mode replace: hapus semua data lama
-            await box.clear();
-          }
-        
+
+      try {
+        if (mode == 'replace') {
+          // Mode replace: hapus semua data lama
+          await box.clear();
+        }
+
         // Generate unique prefix untuk menghindari konflik ID
         restorePrefix = DateTime.now().millisecondsSinceEpoch.toString();
-        
+
         for (var item in data) {
           // Cek apakah data sudah ada (untuk mode merge)
           if (mode == 'merge') {
             final existingData = box.values.where((existing) {
               return existing['tanggal'] == item['tanggal'] &&
-                     existing['nopol'] == item['nopol'] &&
-                     existing['jenis'] == item['jenis'];
+                  existing['nopol'] == item['nopol'] &&
+                  existing['jenis'] == item['jenis'];
             }).toList();
-            
+
             if (existingData.isNotEmpty) {
               duplicateCount++;
               continue; // Skip data yang duplikat
             }
           }
-          
+
           // Buat ID baru yang unik untuk menghindari konflik
           final originalId = item['id'] as String? ?? '';
           final newId = '${restorePrefix}_$originalId';
-          
+
           // Update item dengan ID baru
           final updatedItem = Map<String, dynamic>.from(item);
           updatedItem['id'] = newId;
-          
+
           // Tambahkan timestamp restore untuk tracking
           updatedItem['restored_at'] = DateTime.now().toIso8601String();
           updatedItem['restore_mode'] = mode;
-          
+
           await box.add(updatedItem);
           newCount++;
         }
       } catch (e) {
-        throw Exception('Tidak dapat menyimpan data ke database: ${e.toString()}. Pastikan data backup valid.');
+        throw Exception(
+            'Tidak dapat menyimpan data ke database: ${e.toString()}. Pastikan data backup valid.');
       }
-      
+
       // Restore PDF files jika ada (hanya untuk format ZIP)
       int restoredPdfCount = 0;
       if (fileExtension == 'zip') {
         try {
           final zipBytes = await file.readAsBytes();
           final archive = ZipDecoder().decodeBytes(zipBytes);
-          
+
           // Cari folder pdfs dalam archive
-          final pdfFiles = archive.where((file) => file.name.startsWith('pdfs/')).toList();
-          
+          final pdfFiles =
+              archive.where((file) => file.name.startsWith('pdfs/')).toList();
+
           for (final pdfArchiveFile in pdfFiles) {
             try {
               final fileName = pdfArchiveFile.name.split('/').last;
               final pdfBytes = pdfArchiveFile.content as List<int>;
-              
+
               // Ekstrak ID dari nama file (inspeksi_ID.pdf)
-              final originalId = fileName.replaceAll('inspeksi_', '').replaceAll('.pdf', '');
-              
+              final originalId =
+                  fileName.replaceAll('inspeksi_', '').replaceAll('.pdf', '');
+
               // Buat ID baru yang sesuai dengan data yang di-restore
               final newId = '${restorePrefix}_$originalId';
               final newFileName = 'inspeksi_$newId.pdf';
-              
+
               // Simpan PDF menggunakan PdfStorageService
               final appDir = await getApplicationDocumentsDirectory();
               final pdfDir = Directory('${appDir.path}/inspection_pdfs');
@@ -849,7 +881,7 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
               }
               final pdfFile = File('${pdfDir.path}/$newFileName');
               await pdfFile.writeAsBytes(pdfBytes);
-              
+
               restoredPdfCount++;
             } catch (e) {
               print('Error restoring PDF file ${pdfArchiveFile.name}: $e');
@@ -880,18 +912,18 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
       if (mounted) {
         String message = 'Data berhasil dipulihkan!';
         if (mode == 'merge') {
-          message += ' (${newCount} item baru ditambahkan';
+          message += ' ($newCount item baru ditambahkan';
           if (duplicateCount > 0) {
             message += ', $duplicateCount duplikat dilewati';
           }
         } else {
-          message += ' (${newCount} item';
+          message += ' ($newCount item';
         }
         if (restoredPdfCount > 0) {
           message += ', $restoredPdfCount PDF';
         }
         message += ')';
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -905,7 +937,8 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                       Text(message),
                       Text(
                         'Mode: ${mode == 'merge' ? 'Gabungkan' : 'Ganti Semua'}',
-                        style: TextStyle(fontSize: 12, color: Colors.white70),
+                        style: const TextStyle(
+                            fontSize: 12, color: Colors.white70),
                       ),
                     ],
                   ),
@@ -924,12 +957,12 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
       }
     } catch (e) {
       print('Restore error: $e');
-      
+
       // Tutup dialog progress jika masih terbuka
       if (mounted) {
         Navigator.of(context).pop(); // Tutup dialog progress
       }
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -965,7 +998,7 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
     _loadRecordCount();
     _loadBackupFiles();
     _loadBackupSettings();
-    
+
     // Jika ada file yang dibuka dari aplikasi lain, langsung proses restore
     if (widget.initialFile != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -984,8 +1017,7 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
         final hour = prefs.getInt('backup_time_hour') ?? 20;
         final minute = prefs.getInt('backup_time_minute') ?? 0;
         _backupTime = TimeOfDay(hour: hour, minute: minute);
-      }
-    );
+      });
     } catch (e) {
       print('Error loading backup settings: $e');
     }
@@ -1010,7 +1042,7 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
     bool tempAutoBackupEnabled = _autoBackupEnabled;
     String tempBackupFrequency = _backupFrequency;
     TimeOfDay tempBackupTime = _backupTime;
-    
+
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
@@ -1047,7 +1079,7 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               // Frequency Selection
               const Text(
                 'Frekuensi Backup:',
@@ -1058,12 +1090,15 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                 value: tempBackupFrequency,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 ),
                 items: const [
                   DropdownMenuItem(value: 'daily', child: Text('Setiap Hari')),
-                  DropdownMenuItem(value: 'weekly', child: Text('Setiap Minggu')),
-                  DropdownMenuItem(value: 'monthly', child: Text('Setiap Bulan')),
+                  DropdownMenuItem(
+                      value: 'weekly', child: Text('Setiap Minggu')),
+                  DropdownMenuItem(
+                      value: 'monthly', child: Text('Setiap Bulan')),
                 ],
                 onChanged: (value) {
                   setDialogState(() {
@@ -1072,7 +1107,7 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                 },
               ),
               const SizedBox(height: 16),
-              
+
               // Time Selection
               const Text(
                 'Waktu Backup:',
@@ -1092,7 +1127,8 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                   }
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
                     borderRadius: BorderRadius.circular(4),
@@ -1110,7 +1146,7 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Info
               Container(
                 padding: const EdgeInsets.all(12),
@@ -1163,18 +1199,18 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                   _backupFrequency = tempBackupFrequency;
                   _backupTime = tempBackupTime;
                 });
-                
+
                 // Simpan ke SharedPreferences
                 await _saveBackupSettings();
-                
+
                 if (mounted) {
                   Navigator.of(context).pop();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        _autoBackupEnabled 
-                          ? 'Auto-backup diaktifkan (${_getFrequencyText()})'
-                          : 'Auto-backup dinonaktifkan',
+                        _autoBackupEnabled
+                            ? 'Auto-backup diaktifkan (${_getFrequencyText()})'
+                            : 'Auto-backup dinonaktifkan',
                       ),
                       backgroundColor: Colors.green,
                     ),
@@ -1227,10 +1263,12 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
       final backupDir = await _getBackupDirectory();
       if (backupDir != null && await backupDir.exists()) {
         final files = await backupDir.list().toList();
-        final backupFiles = files.where((file) => 
-          (file.path.endsWith('.json') || file.path.endsWith('.zip')) && file is File
-        ).toList();
-        
+        final backupFiles = files
+            .where((file) =>
+                (file.path.endsWith('.json') || file.path.endsWith('.zip')) &&
+                file is File)
+            .toList();
+
         // Sort by modification time (newest first)
         backupFiles.sort((a, b) {
           try {
@@ -1239,7 +1277,7 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
             return 0;
           }
         });
-        
+
         setState(() {
           _backupFiles = backupFiles;
         });
@@ -1289,19 +1327,21 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                     final fileName = file.path.split('/').last;
                     int fileSize = 0;
                     String dateStr = 'Unknown';
-                    
+
                     try {
                       fileSize = file.lengthSync();
                       final modified = file.statSync().modified;
-                      dateStr = '${modified.day}/${modified.month}/${modified.year} ${modified.hour}:${modified.minute.toString().padLeft(2, '0')}';
+                      dateStr =
+                          '${modified.day}/${modified.month}/${modified.year} ${modified.hour}:${modified.minute.toString().padLeft(2, '0')}';
                     } catch (e) {
                       print('Error getting file info: $e');
                     }
-                    
+
                     final sizeInKB = (fileSize / 1024).toStringAsFixed(1);
-                    final fileExtension = file.path.split('.').last.toLowerCase();
+                    final fileExtension =
+                        file.path.split('.').last.toLowerCase();
                     final isZipFile = fileExtension == 'zip';
-                    
+
                     return InkWell(
                       onTap: () {
                         Navigator.of(context).pop(); // Tutup dialog
@@ -1315,10 +1355,14 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: isZipFile ? Colors.green[100]! : Colors.blue[100]!),
+                          border: Border.all(
+                              color: isZipFile
+                                  ? Colors.green[100]!
+                                  : Colors.blue[100]!),
                           boxShadow: [
                             BoxShadow(
-                              color: (isZipFile ? Colors.green : Colors.blue).withOpacity(0.1),
+                              color: (isZipFile ? Colors.green : Colors.blue)
+                                  .withOpacity(0.1),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -1327,10 +1371,13 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                         child: Row(
                           children: [
                             Icon(
-                              isZipFile ? Icons.archive : Icons.insert_drive_file, 
-                              color: isZipFile ? Colors.green[600] : Colors.blue[600], 
-                              size: 20
-                            ),
+                                isZipFile
+                                    ? Icons.archive
+                                    : Icons.insert_drive_file,
+                                color: isZipFile
+                                    ? Colors.green[600]
+                                    : Colors.blue[600],
+                                size: 20),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -1341,7 +1388,9 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
-                                      color: isZipFile ? Colors.green[700] : Colors.blue[700],
+                                      color: isZipFile
+                                          ? Colors.green[700]
+                                          : Colors.blue[700],
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -1351,7 +1400,9 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                                     '$dateStr • $sizeInKB KB • ${isZipFile ? 'ZIP' : 'JSON'}',
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: isZipFile ? Colors.green[600] : Colors.blue[600],
+                                      color: isZipFile
+                                          ? Colors.green[600]
+                                          : Colors.blue[600],
                                     ),
                                   ),
                                 ],
@@ -1362,7 +1413,8 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: Colors.blue[100],
                                     borderRadius: BorderRadius.circular(8),
@@ -1389,7 +1441,8 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                                 ),
                                 const SizedBox(width: 4),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
                                     color: Colors.orange[100],
                                     borderRadius: BorderRadius.circular(12),
@@ -1454,11 +1507,11 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             }
-            
+
             if (snapshot.hasError) {
               return Text('Error: ${snapshot.error}');
             }
-            
+
             return SizedBox(
               width: double.maxFinite,
               height: 300,
@@ -1492,24 +1545,24 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
   Future<String> _getBackupPreview(File file) async {
     try {
       final fileExtension = file.path.split('.').last.toLowerCase();
-      
+
       if (fileExtension == 'zip') {
         final zipBytes = await file.readAsBytes();
         final archive = ZipDecoder().decodeBytes(zipBytes);
-        
+
         final dataFile = archive.findFile('data.json');
         if (dataFile == null) {
           return 'File ZIP tidak mengandung data.json';
         }
-        
+
         final jsonString = utf8.decode(dataFile.content as List<int>);
         final backupData = jsonDecode(jsonString);
-        
+
         return _formatBackupPreview(backupData);
       } else {
         final jsonString = await file.readAsString();
         final backupData = jsonDecode(jsonString);
-        
+
         return _formatBackupPreview(backupData);
       }
     } catch (e) {
@@ -1520,29 +1573,31 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
   // Format preview backup
   String _formatBackupPreview(Map<String, dynamic> backupData) {
     final buffer = StringBuffer();
-    
+
     buffer.writeln('=== INFORMASI BACKUP ===');
     buffer.writeln('Versi: ${backupData['version'] ?? 'Unknown'}');
     buffer.writeln('Aplikasi: ${backupData['app_name'] ?? 'Unknown'}');
     buffer.writeln('Total Records: ${backupData['total_records'] ?? 0}');
-    
+
     if (backupData['timestamp'] != null) {
       try {
         final date = DateTime.parse(backupData['timestamp']);
-        buffer.writeln('Tanggal Backup: ${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}');
+        buffer.writeln(
+            'Tanggal Backup: ${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}');
       } catch (e) {
         buffer.writeln('Tanggal Backup: ${backupData['timestamp']}');
       }
     }
-    
+
     if (backupData['backup_info'] != null) {
       final info = backupData['backup_info'] as Map<String, dynamic>;
       buffer.writeln('Tipe Backup: ${info['data_preservation'] ?? 'Unknown'}');
       buffer.writeln('Kompatibilitas: ${info['compatibility'] ?? 'Unknown'}');
       buffer.writeln('Penyimpanan: ${info['data_preservation'] ?? 'Unknown'}');
-      buffer.writeln('Perilaku Restore: ${info['restore_behavior'] ?? 'Unknown'}');
+      buffer.writeln(
+          'Perilaku Restore: ${info['restore_behavior'] ?? 'Unknown'}');
     }
-    
+
     if (backupData['data_analysis'] != null) {
       final analysis = backupData['data_analysis'] as Map<String, dynamic>;
       buffer.writeln('\n=== ANALISIS DATA ===');
@@ -1550,24 +1605,25 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
       buffer.writeln(analysis['vehicle_types'] ?? 'Tidak ada data');
       buffer.writeln(analysis['total_vehicles'] ?? 'Tidak ada data');
     }
-    
+
     if (backupData['data'] != null) {
       final data = backupData['data'] as List;
       buffer.writeln('\n=== SAMPLE DATA (5 item pertama) ===');
-      
+
       for (int i = 0; i < data.length && i < 5; i++) {
         final item = data[i];
-        buffer.writeln('${i + 1}. ${item['jenis'] ?? 'Unknown'} - ${item['nopol'] ?? 'Unknown'}');
+        buffer.writeln(
+            '${i + 1}. ${item['jenis'] ?? 'Unknown'} - ${item['nopol'] ?? 'Unknown'}');
         buffer.writeln('   Tanggal: ${item['tanggal'] ?? 'Unknown'}');
         buffer.writeln('   Petugas: ${item['petugas1'] ?? 'Unknown'}');
         buffer.writeln('');
       }
-      
+
       if (data.length > 5) {
         buffer.writeln('... dan ${data.length - 5} item lainnya');
       }
     }
-    
+
     return buffer.toString();
   }
 
@@ -1588,7 +1644,7 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
           ),
         ),
       ),
-            body: _isLoading
+      body: _isLoading
           ? const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -1616,184 +1672,421 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                  // Info Card
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.backup,
-                            size: 64,
-                            color: const Color(0xFF2257C1),
-                          ),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'Backup & Restore Data',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                    // Info Card
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.backup,
+                              size: 64,
+                              color: Color(0xFF2257C1),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Simpan dan pulihkan data inspeksi Anda',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2257C1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              'Total Data: $_totalRecords',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.white,
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Backup & Restore Data',
+                              style: TextStyle(
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Backup Button
-                  ElevatedButton.icon(
-                    onPressed: _backupData,
-                    icon: const Icon(Icons.cloud_upload),
-                    label: const Text('Backup Data'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2257C1),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Restore Button
-                  ElevatedButton.icon(
-                    onPressed: _restoreData,
-                    icon: const Icon(Icons.cloud_download),
-                    label: const Text('Restore Data'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Auto-Backup Settings Button
-                  OutlinedButton.icon(
-                    onPressed: _showAutoBackupSettings,
-                    icon: Icon(
-                      _autoBackupEnabled ? Icons.schedule : Icons.schedule_outlined,
-                      color: _autoBackupEnabled ? Colors.green : Colors.grey,
-                    ),
-                    label: Text(
-                      _autoBackupEnabled 
-                        ? 'Auto-Backup Aktif (${_getFrequencyText()})'
-                        : 'Pengaturan Auto-Backup',
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: _autoBackupEnabled ? Colors.green : Colors.grey,
-                      side: BorderSide(
-                        color: _autoBackupEnabled ? Colors.green : Colors.grey,
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Backup Location Info
-                  if (_lastBackupPath != null)
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.green[50],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.green[200]!),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.folder, color: Colors.green[700]),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Lokasi Backup Terakhir',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green[700],
-                                ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Simpan dan pulihkan data inspeksi Anda',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          if (_lastBackupPath != null && _lastBackupPath!.contains('Download'))
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 6),
                               decoration: BoxDecoration(
-                                color: Colors.green[100],
-                                borderRadius: BorderRadius.circular(12),
+                                color: const Color(0xFF2257C1),
+                                borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                '✓ Muncul di Recent Files',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Colors.green[700],
-                                  fontWeight: FontWeight.w500,
+                                'Total Data: $_totalRecords',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ),
-                            ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _lastBackupPath!,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.green[700],
-                              fontFamily: 'monospace',
-                            ),
-                          ),
-                          if (_lastBackupSize != null) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              'Ukuran: $_lastBackupSize',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Colors.green[600],
-                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
-                        ],
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 20),
 
-                  if (_lastBackupPath != null) const SizedBox(height: 20),
+                    // Backup Button
+                    ElevatedButton.icon(
+                      onPressed: _backupData,
+                      icon: const Icon(Icons.cloud_upload),
+                      label: const Text('Backup Data'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2257C1),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
 
-                  // Backup Files List
-                  if (_backupFiles.isNotEmpty) ...[
+                    // Restore Button
+                    ElevatedButton.icon(
+                      onPressed: _restoreData,
+                      icon: const Icon(Icons.cloud_download),
+                      label: const Text('Restore Data'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Auto-Backup Settings Button
+                    OutlinedButton.icon(
+                      onPressed: _showAutoBackupSettings,
+                      icon: Icon(
+                        _autoBackupEnabled
+                            ? Icons.schedule
+                            : Icons.schedule_outlined,
+                        color: _autoBackupEnabled ? Colors.green : Colors.grey,
+                      ),
+                      label: Text(
+                        _autoBackupEnabled
+                            ? 'Auto-Backup Aktif (${_getFrequencyText()})'
+                            : 'Pengaturan Auto-Backup',
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor:
+                            _autoBackupEnabled ? Colors.green : Colors.grey,
+                        side: BorderSide(
+                          color:
+                              _autoBackupEnabled ? Colors.green : Colors.grey,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Backup Location Info
+                    if (_lastBackupPath != null)
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.green[200]!),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.folder, color: Colors.green[700]),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Lokasi Backup Terakhir',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            if (_lastBackupPath != null &&
+                                _lastBackupPath!.contains('Download'))
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.green[100],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '✓ Muncul di Recent Files',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.green[700],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 8),
+                            Text(
+                              _lastBackupPath!,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.green[700],
+                                fontFamily: 'monospace',
+                              ),
+                            ),
+                            if (_lastBackupSize != null) ...[
+                              const SizedBox(height: 4),
+                              Text(
+                                'Ukuran: $_lastBackupSize',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.green[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+
+                    if (_lastBackupPath != null) const SizedBox(height: 20),
+
+                    // Backup Files List
+                    if (_backupFiles.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blue[200]!),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.folder_open,
+                                    color: Colors.blue[700]),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'File Backup Tersedia (${_backupFiles.length})',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue[700],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Tap untuk restore • Long press untuk preview',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.blue[600],
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            ...(_backupFiles.take(3).map((file) {
+                              final fileName = file.path.split('/').last;
+                              int fileSize = 0;
+                              String dateStr = 'Unknown';
+
+                              try {
+                                fileSize = (file as File).lengthSync();
+                                final modified = file.statSync().modified;
+                                dateStr =
+                                    '${modified.day}/${modified.month}/${modified.year} ${modified.hour}:${modified.minute.toString().padLeft(2, '0')}';
+                              } catch (e) {
+                                print('Error getting file info: $e');
+                              }
+
+                              final sizeInKB =
+                                  (fileSize / 1024).toStringAsFixed(1);
+
+                              final fileExtension =
+                                  file.path.split('.').last.toLowerCase();
+                              final isZipFile = fileExtension == 'zip';
+
+                              return InkWell(
+                                onTap: () {
+                                  // Tambahkan efek haptic feedback
+                                  HapticFeedback.lightImpact();
+                                  _restoreFromFile(file as File);
+                                },
+                                onLongPress: () {
+                                  HapticFeedback.mediumImpact();
+                                  _showBackupPreview(file as File);
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                        color: isZipFile
+                                            ? Colors.green[100]!
+                                            : Colors.blue[100]!),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: (isZipFile
+                                                ? Colors.green
+                                                : Colors.blue)
+                                            .withOpacity(0.1),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                          isZipFile
+                                              ? Icons.archive
+                                              : Icons.insert_drive_file,
+                                          color: isZipFile
+                                              ? Colors.green[600]
+                                              : Colors.blue[600],
+                                          size: 20),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              fileName,
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: isZipFile
+                                                    ? Colors.green[700]
+                                                    : Colors.blue[700],
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              '$dateStr • $sizeInKB KB • ${isZipFile ? 'ZIP' : 'JSON'}',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: isZipFile
+                                                    ? Colors.green[600]
+                                                    : Colors.blue[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange[100],
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.restore,
+                                              size: 14,
+                                              color: Colors.orange[700],
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              'Restore',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.orange[700],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            })),
+                            if (_backupFiles.length > 3) ...[
+                              const SizedBox(height: 8),
+                              Center(
+                                child: TextButton.icon(
+                                  onPressed: () => _showAllBackupFiles(),
+                                  icon: Icon(Icons.list,
+                                      size: 16, color: Colors.blue[600]),
+                                  label: Text(
+                                    'Lihat Semua File (${_backupFiles.length})',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.blue[600],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    backgroundColor: Colors.blue[50],
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ] else ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.folder_open, color: Colors.grey[600]),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Belum ada file backup tersedia',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+
+                    // Info Section
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -1806,249 +2099,42 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
                         children: [
                           Row(
                             children: [
-                              Icon(Icons.folder_open, color: Colors.blue[700]),
+                              Icon(Icons.info, color: Colors.blue[700]),
                               const SizedBox(width: 8),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'File Backup Tersedia (${_backupFiles.length})',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.blue[700],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Tap untuk restore • Long press untuk preview',
-                                      style: TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.blue[600],
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ],
+                              Text(
+                                'Informasi Penting',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue[700],
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 12),
-                          ...(_backupFiles.take(3).map((file) {
-                            final fileName = file.path.split('/').last;
-                            int fileSize = 0;
-                            String dateStr = 'Unknown';
-                            
-                            try {
-                              fileSize = (file as File).lengthSync();
-                              final modified = file.statSync().modified;
-                              dateStr = '${modified.day}/${modified.month}/${modified.year} ${modified.hour}:${modified.minute.toString().padLeft(2, '0')}';
-                            } catch (e) {
-                              print('Error getting file info: $e');
-                            }
-                            
-                            final sizeInKB = (fileSize / 1024).toStringAsFixed(1);
-                            
-                            final fileExtension = file.path.split('.').last.toLowerCase();
-                            final isZipFile = fileExtension == 'zip';
-                            
-                                                  return InkWell(
-                        onTap: () {
-                          // Tambahkan efek haptic feedback
-                          HapticFeedback.lightImpact();
-                          _restoreFromFile(file as File);
-                        },
-                        onLongPress: () {
-                          HapticFeedback.mediumImpact();
-                          _showBackupPreview(file as File);
-                        },
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: isZipFile ? Colors.green[100]! : Colors.blue[100]!),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: (isZipFile ? Colors.green : Colors.blue).withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      isZipFile ? Icons.archive : Icons.insert_drive_file, 
-                                      color: isZipFile ? Colors.green[600] : Colors.blue[600], 
-                                      size: 20
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            fileName,
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600,
-                                              color: isZipFile ? Colors.green[700] : Colors.blue[700],
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            '$dateStr • $sizeInKB KB • ${isZipFile ? 'ZIP' : 'JSON'}',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: isZipFile ? Colors.green[600] : Colors.blue[600],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.orange[100],
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.restore,
-                                            size: 14,
-                                            color: Colors.orange[700],
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            'Restore',
-                                            style: TextStyle(
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                              color: Colors.orange[700],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          })),
-                          if (_backupFiles.length > 3) ...[
-                            const SizedBox(height: 8),
-                            Center(
-                              child: TextButton.icon(
-                                onPressed: () => _showAllBackupFiles(),
-                                icon: Icon(Icons.list, size: 16, color: Colors.blue[600]),
-                                label: Text(
-                                  'Lihat Semua File (${_backupFiles.length})',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.blue[600],
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                style: TextButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                  backgroundColor: Colors.blue[50],
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ] else ...[
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[50],
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey[300]!),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.folder_open, color: Colors.grey[600]),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              'Belum ada file backup tersedia',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                                fontStyle: FontStyle.italic,
-                              ),
+                          Text(
+                            '• Backup akan menyimpan semua data inspeksi ke file ZIP\n'
+                            '• Restore dengan 2 mode: Gabungkan atau Ganti Semua\n'
+                            '• Tanggal inspeksi tetap terjaga (tidak mereset)\n'
+                            '• File backup disimpan di Downloads folder\n'
+                            '• Format ZIP yang lebih efisien dan Android-friendly\n'
+                            '• Versi backup: 2.1 (dengan analisis data)\n'
+                            '• Klik file backup untuk langsung restore\n'
+                            '• Mendukung restore dari file JSON lama (legacy)\n'
+                            '• Deteksi duplikat otomatis saat merge',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.blue[700],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 40), // Extra padding for scroll
                   ],
-
-                  // Info Section
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue[200]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.info, color: Colors.blue[700]),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Informasi Penting',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue[700],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          '• Backup akan menyimpan semua data inspeksi ke file ZIP\n'
-                          '• Restore dengan 2 mode: Gabungkan atau Ganti Semua\n'
-                          '• Tanggal inspeksi tetap terjaga (tidak mereset)\n'
-                          '• File backup disimpan di Downloads folder\n'
-                          '• Format ZIP yang lebih efisien dan Android-friendly\n'
-                          '• Versi backup: 2.1 (dengan analisis data)\n'
-                          '• Klik file backup untuk langsung restore\n'
-                          '• Mendukung restore dari file JSON lama (legacy)\n'
-                          '• Deteksi duplikat otomatis saat merge',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.blue[700],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 40), // Extra padding for scroll
-                ],
+                ),
               ),
             ),
-          ),
     );
   }
 }

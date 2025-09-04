@@ -3,40 +3,44 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jasamarga_inspector/services/notification_service.dart';
 import 'package:jasamarga_inspector/screens/home_screen.dart';
 
-
-
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
 
   @override
-  State<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
+  State<NotificationSettingsScreen> createState() =>
+      _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
+class _NotificationSettingsScreenState
+    extends State<NotificationSettingsScreen> {
   final NotificationService _notificationService = NotificationService();
-  
+
   // Daily reminder settings
   bool _dailyReminderEnabled = false;
   TimeOfDay _dailyReminderTime = const TimeOfDay(hour: 8, minute: 0);
-  
+
   // Weekly reminder settings
   bool _weeklyReminderEnabled = false;
   int _weeklyReminderDay = 1; // Monday
   TimeOfDay _weeklyReminderTime = const TimeOfDay(hour: 9, minute: 0);
-  
 
-  
   // Maintenance reminder settings
   bool _maintenanceReminderEnabled = false;
   int _maintenanceReminderDays = 7;
-  
+
   // General settings
   bool _notificationsEnabled = false;
   bool _soundEnabled = true;
   bool _vibrationEnabled = true;
 
   final List<String> _weekdays = [
-    'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'
+    'Senin',
+    'Selasa',
+    'Rabu',
+    'Kamis',
+    'Jumat',
+    'Sabtu',
+    'Minggu'
   ];
 
   @override
@@ -47,26 +51,26 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     setState(() {
       _dailyReminderEnabled = prefs.getBool('daily_reminder_enabled') ?? false;
-      _weeklyReminderEnabled = prefs.getBool('weekly_reminder_enabled') ?? false;
+      _weeklyReminderEnabled =
+          prefs.getBool('weekly_reminder_enabled') ?? false;
 
-      _maintenanceReminderEnabled = prefs.getBool('maintenance_reminder_enabled') ?? false;
+      _maintenanceReminderEnabled =
+          prefs.getBool('maintenance_reminder_enabled') ?? false;
       _notificationsEnabled = prefs.getBool('notifications_enabled') ?? false;
       _soundEnabled = prefs.getBool('sound_enabled') ?? true;
       _vibrationEnabled = prefs.getBool('vibration_enabled') ?? true;
-      
+
       final dailyHour = prefs.getInt('daily_reminder_hour') ?? 8;
       final dailyMinute = prefs.getInt('daily_reminder_minute') ?? 0;
       _dailyReminderTime = TimeOfDay(hour: dailyHour, minute: dailyMinute);
-      
+
       final weeklyHour = prefs.getInt('weekly_reminder_hour') ?? 9;
       final weeklyMinute = prefs.getInt('weekly_reminder_minute') ?? 0;
       _weeklyReminderTime = TimeOfDay(hour: weeklyHour, minute: weeklyMinute);
-      
 
-      
       _weeklyReminderDay = prefs.getInt('weekly_reminder_day') ?? 1;
 
       _maintenanceReminderDays = prefs.getInt('maintenance_reminder_days') ?? 7;
@@ -75,15 +79,16 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
 
   Future<void> _saveSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     await prefs.setBool('daily_reminder_enabled', _dailyReminderEnabled);
     await prefs.setBool('weekly_reminder_enabled', _weeklyReminderEnabled);
 
-    await prefs.setBool('maintenance_reminder_enabled', _maintenanceReminderEnabled);
+    await prefs.setBool(
+        'maintenance_reminder_enabled', _maintenanceReminderEnabled);
     await prefs.setBool('notifications_enabled', _notificationsEnabled);
     await prefs.setBool('sound_enabled', _soundEnabled);
     await prefs.setBool('vibration_enabled', _vibrationEnabled);
-    
+
     await prefs.setInt('daily_reminder_hour', _dailyReminderTime.hour);
     await prefs.setInt('daily_reminder_minute', _dailyReminderTime.minute);
     await prefs.setInt('weekly_reminder_hour', _weeklyReminderTime.hour);
@@ -116,14 +121,12 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     }
   }
 
-
-
   Future<void> _testNotification() async {
     await _notificationService.showNotification(
       title: 'Test Notifikasi',
       body: 'Ini adalah notifikasi test dari aplikasi Jasamarga Inspeksi',
     );
-    
+
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -139,15 +142,15 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: Text('Pengaturan Notifikasi'),
+        title: const Text('Pengaturan Notifikasi'),
         centerTitle: true,
         backgroundColor: Colors.white,
-        foregroundColor: Color(0xFF2257C1),
+        foregroundColor: const Color(0xFF2257C1),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Color(0xFF2257C1)),
           onPressed: () => Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => HomeScreen()),
+            MaterialPageRoute(builder: (_) => const HomeScreen()),
           ),
         ),
       ),
@@ -220,24 +223,28 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   title: const Text('Suara Notifikasi'),
                   subtitle: const Text('Putar suara saat notifikasi'),
                   value: _soundEnabled,
-                  onChanged: _notificationsEnabled ? (value) {
-                    setState(() {
-                      _soundEnabled = value;
-                    });
-                    _saveSettings();
-                  } : null,
+                  onChanged: _notificationsEnabled
+                      ? (value) {
+                          setState(() {
+                            _soundEnabled = value;
+                          });
+                          _saveSettings();
+                        }
+                      : null,
                   activeColor: const Color(0xFF2257C1),
                 ),
                 SwitchListTile(
                   title: const Text('Getaran'),
                   subtitle: const Text('Getar saat notifikasi'),
                   value: _vibrationEnabled,
-                  onChanged: _notificationsEnabled ? (value) {
-                    setState(() {
-                      _vibrationEnabled = value;
-                    });
-                    _saveSettings();
-                  } : null,
+                  onChanged: _notificationsEnabled
+                      ? (value) {
+                          setState(() {
+                            _vibrationEnabled = value;
+                          });
+                          _saveSettings();
+                        }
+                      : null,
                   activeColor: const Color(0xFF2257C1),
                 ),
               ],
@@ -253,13 +260,15 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   title: const Text('Aktifkan Reminder Harian'),
                   subtitle: const Text('Reminder setiap hari untuk inspeksi'),
                   value: _dailyReminderEnabled,
-                  onChanged: _notificationsEnabled ? (value) async {
-                    setState(() {
-                      _dailyReminderEnabled = value;
-                    });
-                    await _updateDailyReminder();
-                    await _saveSettings();
-                  } : null,
+                  onChanged: _notificationsEnabled
+                      ? (value) async {
+                          setState(() {
+                            _dailyReminderEnabled = value;
+                          });
+                          await _updateDailyReminder();
+                          await _saveSettings();
+                        }
+                      : null,
                   activeColor: const Color(0xFF2257C1),
                 ),
                 if (_dailyReminderEnabled) ...[
@@ -295,13 +304,15 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                   title: const Text('Aktifkan Reminder Mingguan'),
                   subtitle: const Text('Reminder setiap minggu untuk inspeksi'),
                   value: _weeklyReminderEnabled,
-                  onChanged: _notificationsEnabled ? (value) async {
-                    setState(() {
-                      _weeklyReminderEnabled = value;
-                    });
-                    await _updateWeeklyReminder();
-                    await _saveSettings();
-                  } : null,
+                  onChanged: _notificationsEnabled
+                      ? (value) async {
+                          setState(() {
+                            _weeklyReminderEnabled = value;
+                          });
+                          await _updateWeeklyReminder();
+                          await _saveSettings();
+                        }
+                      : null,
                   activeColor: const Color(0xFF2257C1),
                 ),
                 if (_weeklyReminderEnabled) ...[
@@ -359,8 +370,6 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             ),
             const SizedBox(height: 16),
 
-
-
             // Maintenance Reminder
             _buildSectionCard(
               title: 'Reminder Maintenance',
@@ -368,14 +377,17 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               children: [
                 SwitchListTile(
                   title: const Text('Aktifkan Reminder Maintenance'),
-                  subtitle: const Text('Reminder untuk kendaraan yang belum diinspeksi'),
+                  subtitle: const Text(
+                      'Reminder untuk kendaraan yang belum diinspeksi'),
                   value: _maintenanceReminderEnabled,
-                  onChanged: _notificationsEnabled ? (value) {
-                    setState(() {
-                      _maintenanceReminderEnabled = value;
-                    });
-                    _saveSettings();
-                  } : null,
+                  onChanged: _notificationsEnabled
+                      ? (value) {
+                          setState(() {
+                            _maintenanceReminderEnabled = value;
+                          });
+                          _saveSettings();
+                        }
+                      : null,
                   activeColor: const Color(0xFF2257C1),
                 ),
                 if (_maintenanceReminderEnabled) ...[
@@ -432,8 +444,6 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
               ),
             ),
             const SizedBox(height: 16),
-
-
 
             // Info Card
             Container(

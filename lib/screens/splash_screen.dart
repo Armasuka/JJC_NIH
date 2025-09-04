@@ -11,7 +11,8 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends State<SplashScreen>
+    with TickerProviderStateMixin {
   late AnimationController _logoController;
   late AnimationController _fadeController;
   late AnimationController _pulseController;
@@ -23,19 +24,19 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    
+
     // Logo animation controller - extended duration for better visibility
     _logoController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     // Fade animation controller - extended duration for better visibility
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     // Logo scale animation
     _logoScale = Tween<double>(
       begin: 0.0,
@@ -44,7 +45,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       parent: _logoController,
       curve: Curves.elasticOut,
     ));
-    
+
     // Logo opacity animation
     _logoOpacity = Tween<double>(
       begin: 0.0,
@@ -53,7 +54,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       parent: _logoController,
       curve: Curves.easeInOut,
     ));
-    
+
     // Fade animation for text
     _fadeAnimation = Tween<double>(
       begin: 0.0,
@@ -62,13 +63,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       parent: _fadeController,
       curve: Curves.easeInOut,
     ));
-    
+
     // Pulse animation controller for logo
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    
+
     // Pulse animation
     _pulseAnimation = Tween<double>(
       begin: 1.0,
@@ -77,27 +78,28 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       parent: _pulseController,
       curve: Curves.easeInOut,
     ));
-    
+
     // Start animations immediately
     _logoController.forward();
-    
+
     // Start fade animation after logo animation
     Future.delayed(const Duration(milliseconds: 400), () {
       _fadeController.forward();
     });
-    
+
     // Start pulse animation after logo animation completes
     Future.delayed(const Duration(milliseconds: 1500), () {
       _pulseController.repeat(reverse: true);
     });
-    
+
     // Navigate to appropriate screen after extended delay for better user experience
     Timer(const Duration(milliseconds: 2800), () async {
       final prefs = await SharedPreferences.getInstance();
       final onboardingDone = prefs.getBool('onboarding_done') ?? false;
-      
-      Widget targetScreen = onboardingDone ? const HomeScreen() : const OnboardingScreen();
-      
+
+      Widget targetScreen =
+          onboardingDone ? const HomeScreen() : const OnboardingScreen();
+
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
@@ -113,7 +115,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       );
     });
   }
-  
+
   @override
   void dispose() {
     _logoController.dispose();
@@ -127,13 +129,13 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     return Scaffold(
       backgroundColor: const Color(0xFF2257C1), // Jasa Marga blue
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF2257C1),
-              const Color(0xFF1A4A9E),
+              Color(0xFF2257C1),
+              Color(0xFF1A4A9E),
             ],
           ),
         ),
@@ -144,7 +146,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               children: [
                 // Large Logo with animations
                 AnimatedBuilder(
-                  animation: Listenable.merge([_logoController, _pulseController]),
+                  animation:
+                      Listenable.merge([_logoController, _pulseController]),
                   builder: (context, child) {
                     return Transform.scale(
                       scale: _logoScale.value * _pulseAnimation.value,
@@ -192,7 +195,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           ),
                           const SizedBox(height: 8),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 6),
                             decoration: BoxDecoration(
                               color: const Color(0xFFEBEC07),
                               borderRadius: BorderRadius.circular(20),
@@ -234,7 +238,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                             width: 40,
                             height: 40,
                             child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                               strokeWidth: 3,
                             ),
                           ),
@@ -273,7 +278,8 @@ class _AnimatedDots extends StatefulWidget {
   _AnimatedDotsState createState() => _AnimatedDotsState();
 }
 
-class _AnimatedDotsState extends State<_AnimatedDots> with TickerProviderStateMixin {
+class _AnimatedDotsState extends State<_AnimatedDots>
+    with TickerProviderStateMixin {
   late AnimationController _controller;
   late List<Animation<double>> _dotAnimations;
 

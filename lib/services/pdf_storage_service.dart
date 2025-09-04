@@ -1,12 +1,11 @@
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../utils/logger.dart';
 
 class PdfStorageService {
   static const String _pdfDirectory = 'inspection_pdfs';
-  
+
   // Mendapatkan direktori untuk menyimpan PDF
   static Future<Directory> _getPdfDirectory() async {
     final appDir = await getApplicationDocumentsDirectory();
@@ -16,7 +15,7 @@ class PdfStorageService {
     }
     return pdfDir;
   }
-  
+
   // Menyimpan PDF ke storage lokal
   static Future<String> savePdf(String id, pw.Document pdf) async {
     try {
@@ -29,7 +28,7 @@ class PdfStorageService {
       rethrow;
     }
   }
-  
+
   // Mengambil file PDF berdasarkan ID
   static Future<File?> getPdfFile(String id) async {
     try {
@@ -44,7 +43,7 @@ class PdfStorageService {
       return null;
     }
   }
-  
+
   // Menghapus file PDF berdasarkan ID
   static Future<bool> deletePdf(String id) async {
     try {
@@ -60,19 +59,22 @@ class PdfStorageService {
       return false;
     }
   }
-  
+
   // Mendapatkan semua file PDF
   static Future<List<File>> getAllPdfFiles() async {
     try {
       final pdfDir = await _getPdfDirectory();
       final files = await pdfDir.list().toList();
-      return files.whereType<File>().where((file) => file.path.endsWith('.pdf')).toList();
+      return files
+          .whereType<File>()
+          .where((file) => file.path.endsWith('.pdf'))
+          .toList();
     } catch (e) {
       Logger.debug('Error getting all PDF files: $e');
       return [];
     }
   }
-  
+
   // Mendapatkan ukuran file PDF
   static Future<int> getPdfFileSize(String id) async {
     try {
@@ -86,7 +88,7 @@ class PdfStorageService {
       return 0;
     }
   }
-  
+
   // Membersihkan file PDF yang tidak terpakai
   static Future<void> cleanupUnusedPdfs(List<String> validIds) async {
     try {

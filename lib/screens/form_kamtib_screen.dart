@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:async';
@@ -20,7 +19,7 @@ import 'success_screen.dart';
 class FormKamtibScreen extends StatefulWidget {
   final Map<String, dynamic>? draftData;
   final String? draftKey;
-  
+
   const FormKamtibScreen({
     super.key,
     this.draftData,
@@ -36,7 +35,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
   final TextEditingController petugas1Controller = TextEditingController();
   final TextEditingController petugas2Controller = TextEditingController();
   final TextEditingController nopolController = TextEditingController();
-  final TextEditingController identitasKendaraanController = TextEditingController();
+  final TextEditingController identitasKendaraanController =
+      TextEditingController();
   final TextEditingController lokasiController = TextEditingController();
   final TextEditingController managerNameController = TextEditingController();
   final TextEditingController jjcNameController = TextEditingController();
@@ -68,15 +68,16 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
   // Auto-save functionality
   Timer? _autoSaveTimer;
   bool _hasUnsavedChanges = false;
-  bool _isFormSubmitted = false; // Flag to prevent auto-save after form submission
+  bool _isFormSubmitted =
+      false; // Flag to prevent auto-save after form submission
   static const Duration _autoSaveInterval = Duration(seconds: 30);
 
   final List<String> kondisiOptions = ['BAIK', 'RR', 'RB'];
 
-
-
   final List<String> kelengkapanPetugasList = [
-    'Rompi keselamatan kerja', 'Sepatu Safety', 'Sabuk, Pentungan dll'
+    'Rompi keselamatan kerja',
+    'Sepatu Safety',
+    'Sabuk, Pentungan dll'
   ];
 
   final List<String> kelengkapanSaranaList = [
@@ -84,9 +85,10 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
   ];
 
   final List<String> kelengkapanKendaraanList = [
-    'Rubber Cone', 'Bendera Merah/Tongkat', 'Handy Talky'
+    'Rubber Cone',
+    'Bendera Merah/Tongkat',
+    'Handy Talky'
   ];
-
 
   final Map<String, Map<String, dynamic>> kelengkapanPetugas = {};
   final Map<String, Map<String, dynamic>> kelengkapanSarana = {};
@@ -118,13 +120,13 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
         };
       }
     }
-    
+
     // Start auto-save timer
     _startAutoSave();
-    
+
     // Load draft if exists
     _loadDraft();
-    
+
     // Check if there's a saved draft
     _checkForSavedDraft();
   }
@@ -136,7 +138,7 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
       _saveDraft();
     }
     _autoSaveTimer?.cancel();
-    
+
     petugas1Controller.dispose();
     petugas2Controller.dispose();
     nopolController.dispose();
@@ -180,15 +182,19 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
         'managerName': managerNameController.text,
         'jjcName': jjcNameController.text,
         'tanggal': tanggal.toIso8601String(),
-        'masaBerlaku': Map.fromEntries(
-          masaBerlakuController.entries.map((e) => MapEntry(e.key, e.value.text))
-        ),
+        'masaBerlaku': Map.fromEntries(masaBerlakuController.entries
+            .map((e) => MapEntry(e.key, e.value.text))),
         'kelengkapanPetugas': _serializeChecklist(kelengkapanPetugas),
         'kelengkapanKendaraan': _serializeChecklist(kelengkapanKendaraan),
         'signatures': {
-          'petugas1': petugas1Signature != null ? base64Encode(petugas1Signature!) : null,
-          'petugas2': petugas2Signature != null ? base64Encode(petugas2Signature!) : null,
-          'manager': managerSignature != null ? base64Encode(managerSignature!) : null,
+          'petugas1': petugas1Signature != null
+              ? base64Encode(petugas1Signature!)
+              : null,
+          'petugas2': petugas2Signature != null
+              ? base64Encode(petugas2Signature!)
+              : null,
+          'manager':
+              managerSignature != null ? base64Encode(managerSignature!) : null,
           'jjc': jjcSignature != null ? base64Encode(jjcSignature!) : null,
         },
         'photos': {
@@ -200,18 +206,18 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
           'bbm': fotoBbm?.path,
         },
       };
-      
+
       final success = await DraftService.saveDraft(
         formType: 'Kamtib',
         data: draftData,
       );
-      
+
       // If this is a loaded draft, update the draft key
       if (widget.draftKey != null) {
         // Delete the old draft and save with the new key
         await DraftService.deleteDraft(widget.draftKey!);
       }
-      
+
       if (success) {
         setState(() {
           _hasUnsavedChanges = false;
@@ -220,10 +226,9 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
       } else {
         throw Exception('Failed to save draft via DraftService');
       }
-      
     } catch (e) {
       print('❌ Error saving draft: $e');
-      
+
       // Show error to user - gunakan addPostFrameCallback untuk memastikan widget sudah siap
       if (mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -232,15 +237,15 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
               SnackBar(
                 content: Row(
                   children: [
-                    Icon(Icons.error, color: Colors.white),
-                    SizedBox(width: 8),
+                    const Icon(Icons.error, color: Colors.white),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Text('Error menyimpan draft: $e'),
                     ),
                   ],
                 ),
                 backgroundColor: Colors.red,
-                duration: Duration(seconds: 4),
+                duration: const Duration(seconds: 4),
               ),
             );
           }
@@ -258,31 +263,40 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
         draftData = widget.draftData;
       }
       // If widget.draftData is null, don't load any draft (this is a new form)
-      
+
       if (draftData != null) {
         setState(() {
           petugas1Controller.text = (draftData!['petugas1'] as String?) ?? '';
-          petugas2Controller.text = (draftData!['petugas2'] as String?) ?? '';
-          nopolController.text = (draftData!['nopol'] as String?) ?? '';
-          identitasKendaraanController.text = (draftData!['identitasKendaraan'] as String?) ?? '';
-          lokasiController.text = (draftData!['lokasi'] as String?) ?? '';
-          managerNameController.text = (draftData!['managerName'] as String?) ?? '';
-          jjcNameController.text = (draftData!['jjcName'] as String?) ?? '';
-          
+          petugas2Controller.text = (draftData['petugas2'] as String?) ?? '';
+          nopolController.text = (draftData['nopol'] as String?) ?? '';
+          identitasKendaraanController.text =
+              (draftData['identitasKendaraan'] as String?) ?? '';
+          lokasiController.text = (draftData['lokasi'] as String?) ?? '';
+          managerNameController.text =
+              (draftData['managerName'] as String?) ?? '';
+          jjcNameController.text = (draftData['jjcName'] as String?) ?? '';
+
           // Load masa berlaku
-          final masaBerlaku = draftData!['masaBerlaku'] as Map<String, dynamic>? ?? {};
+          final masaBerlaku =
+              draftData['masaBerlaku'] as Map<String, dynamic>? ?? {};
           for (var entry in masaBerlaku.entries) {
             if (masaBerlakuController.containsKey(entry.key)) {
-              masaBerlakuController[entry.key]!.text = (entry.value as String?) ?? '';
+              masaBerlakuController[entry.key]!.text =
+                  (entry.value as String?) ?? '';
             }
           }
-          
+
           // Load checklists
-          _deserializeChecklist(draftData!['kelengkapanPetugas'] as Map<String, dynamic>? ?? {}, kelengkapanPetugas);
-          _deserializeChecklist(draftData!['kelengkapanKendaraan'] as Map<String, dynamic>? ?? {}, kelengkapanKendaraan);
-          
+          _deserializeChecklist(
+              draftData['kelengkapanPetugas'] as Map<String, dynamic>? ?? {},
+              kelengkapanPetugas);
+          _deserializeChecklist(
+              draftData['kelengkapanKendaraan'] as Map<String, dynamic>? ?? {},
+              kelengkapanKendaraan);
+
           // Load signatures
-          final signatures = draftData!['signatures'] as Map<String, dynamic>? ?? {};
+          final signatures =
+              draftData['signatures'] as Map<String, dynamic>? ?? {};
           if (signatures['petugas1'] != null) {
             petugas1Signature = base64Decode(signatures['petugas1'] as String);
           }
@@ -295,17 +309,18 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
           if (signatures['jjc'] != null) {
             jjcSignature = base64Decode(signatures['jjc'] as String);
           }
-          
+
           // Load photos
-          final photos = draftData!['photos'] as Map<String, dynamic>? ?? {};
+          final photos = draftData['photos'] as Map<String, dynamic>? ?? {};
           if (photos['stnk'] != null) fotoStnk = File(photos['stnk'] as String);
           if (photos['kir'] != null) fotoKir = File(photos['kir'] as String);
           if (photos['sim1'] != null) fotoSim1 = File(photos['sim1'] as String);
           if (photos['sim2'] != null) fotoSim2 = File(photos['sim2'] as String);
-          if (photos['service'] != null) fotoService = File(photos['service'] as String);
+          if (photos['service'] != null)
+            fotoService = File(photos['service'] as String);
           if (photos['bbm'] != null) fotoBbm = File(photos['bbm'] as String);
         });
-        
+
         _checkForSavedDraft();
       }
     } catch (e) {
@@ -313,7 +328,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
     }
   }
 
-  Map<String, dynamic> _serializeChecklist(Map<String, Map<String, dynamic>> checklist) {
+  Map<String, dynamic> _serializeChecklist(
+      Map<String, Map<String, dynamic>> checklist) {
     final serialized = <String, Map<String, dynamic>>{};
     for (var entry in checklist.entries) {
       serialized[entry.key] = {
@@ -325,11 +341,13 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
     return serialized;
   }
 
-  void _deserializeChecklist(Map<String, dynamic> serialized, Map<String, Map<String, dynamic>> checklist) {
+  void _deserializeChecklist(Map<String, dynamic> serialized,
+      Map<String, Map<String, dynamic>> checklist) {
     for (var entry in serialized.entries) {
       if (checklist.containsKey(entry.key)) {
         checklist[entry.key]!['ada'] = entry.value['ada'] ?? false;
-        (checklist[entry.key]!['jumlah'] as TextEditingController).text = entry.value['jumlah'] ?? '';
+        (checklist[entry.key]!['jumlah'] as TextEditingController).text =
+            entry.value['jumlah'] ?? '';
         checklist[entry.key]!['kondisi'] = entry.value['kondisi'] ?? 'BAIK';
       }
     }
@@ -345,7 +363,7 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Row(
               children: [
                 Icon(Icons.delete, color: Colors.white),
@@ -369,7 +387,7 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Row(
+              content: const Row(
                 children: [
                   Icon(Icons.info, color: Colors.white),
                   SizedBox(width: 8),
@@ -379,7 +397,7 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                 ],
               ),
               backgroundColor: Colors.blue,
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
               action: SnackBarAction(
                 label: 'OK',
                 textColor: Colors.white,
@@ -486,11 +504,11 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
               onPressed: () {
                 signatureController.clear();
               },
-              child: Text('Clear'),
+              child: const Text('Clear'),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () => handleSignature(type),
@@ -498,7 +516,7 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                 backgroundColor: const Color(0xFF2257C1),
                 foregroundColor: Colors.white,
               ),
-              child: Text('Save'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -541,7 +559,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
     }
   }
 
-  Widget buildChecklist(String title, Map<String, Map<String, dynamic>> dataMap) {
+  Widget buildChecklist(
+      String title, Map<String, Map<String, dynamic>> dataMap) {
     return Card(
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 16),
@@ -561,102 +580,125 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
             ),
             const Divider(height: 24),
             ...dataMap.keys.map((item) => Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Theme(
-                        data: Theme.of(context).copyWith(
-                          unselectedWidgetColor: Colors.grey[600],
-                        ),
-                        child: Checkbox(
-                          value: dataMap[item]!['ada'] as bool,
-                          onChanged: (val) {
-                            setState(() {
-                              dataMap[item]!['ada'] = val ?? false;
-                              // Jika tidak diceklis, bersihkan field jumlah dan set kondisi ke default
-                              if (!(val ?? false)) {
-                                (dataMap[item]!['jumlah'] as TextEditingController).clear();
-                                dataMap[item]!['kondisi'] = 'BAIK';
-                              }
-                            });
-                            _markAsChanged();
-                          },
-                          activeColor: const Color(0xFF2257C1),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          item,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ],
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(width: 48),
-                      Expanded(
-                        child: Container(
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: (dataMap[item]!['ada'] as bool) ? Colors.white : Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: (dataMap[item]!['ada'] as bool) ? Colors.grey[400]! : Colors.grey[300]!),
+                      Row(
+                        children: [
+                          Theme(
+                            data: Theme.of(context).copyWith(
+                              unselectedWidgetColor: Colors.grey[600],
+                            ),
+                            child: Checkbox(
+                              value: dataMap[item]!['ada'] as bool,
+                              onChanged: (val) {
+                                setState(() {
+                                  dataMap[item]!['ada'] = val ?? false;
+                                  // Jika tidak diceklis, bersihkan field jumlah dan set kondisi ke default
+                                  if (!(val ?? false)) {
+                                    (dataMap[item]!['jumlah']
+                                            as TextEditingController)
+                                        .clear();
+                                    dataMap[item]!['kondisi'] = 'BAIK';
+                                  }
+                                });
+                                _markAsChanged();
+                              },
+                              activeColor: const Color(0xFF2257C1),
+                            ),
                           ),
-                          child: TextField(
-                            controller: dataMap[item]!['jumlah'] as TextEditingController,
-                            keyboardType: TextInputType.number,
-                            enabled: dataMap[item]!['ada'] as bool,
-                            decoration: InputDecoration(
-                              labelText: 'Jumlah',
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                              hintStyle: TextStyle(
-                                color: (dataMap[item]!['ada'] as bool) ? Colors.grey[600] : Colors.grey[400],
+                          Expanded(
+                            child: Text(
+                              item,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const SizedBox(width: 48),
+                          Expanded(
+                            child: Container(
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: (dataMap[item]!['ada'] as bool)
+                                    ? Colors.white
+                                    : Colors.grey[200],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                    color: (dataMap[item]!['ada'] as bool)
+                                        ? Colors.grey[400]!
+                                        : Colors.grey[300]!),
+                              ),
+                              child: TextField(
+                                controller: dataMap[item]!['jumlah']
+                                    as TextEditingController,
+                                keyboardType: TextInputType.number,
+                                enabled: dataMap[item]!['ada'] as bool,
+                                decoration: InputDecoration(
+                                  labelText: 'Jumlah',
+                                  border: InputBorder.none,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  hintStyle: TextStyle(
+                                    color: (dataMap[item]!['ada'] as bool)
+                                        ? Colors.grey[600]
+                                        : Colors.grey[400],
+                                  ),
+                                ),
+                                onChanged: (value) => _markAsChanged(),
                               ),
                             ),
-                            onChanged: (value) => _markAsChanged(),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: (dataMap[item]!['ada'] as bool) ? Colors.white : Colors.grey[200],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: (dataMap[item]!['ada'] as bool) ? Colors.grey[400]! : Colors.grey[300]!),
-                        ),
-                        child: DropdownButton<String>(
-                          value: dataMap[item]!['kondisi'] as String,
-                          underline: const SizedBox(),
-                          items: kondisiOptions
-                              .map((k) => DropdownMenuItem(
-                                value: k,
-                                child: Text(k == 'RR' ? 'RUSAK RINGAN' : k == 'RB' ? 'RUSAK BERAT' : k),
-                              ))
-                              .toList(),
-                          onChanged: (dataMap[item]!['ada'] as bool) ? (val) {
-                            setState(() => dataMap[item]!['kondisi'] = val!);
-                            _markAsChanged();
-                          } : null,
-                        ),
+                          const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: (dataMap[item]!['ada'] as bool)
+                                  ? Colors.white
+                                  : Colors.grey[200],
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: (dataMap[item]!['ada'] as bool)
+                                      ? Colors.grey[400]!
+                                      : Colors.grey[300]!),
+                            ),
+                            child: DropdownButton<String>(
+                              value: dataMap[item]!['kondisi'] as String,
+                              underline: const SizedBox(),
+                              items: kondisiOptions
+                                  .map((k) => DropdownMenuItem(
+                                        value: k,
+                                        child: Text(k == 'RR'
+                                            ? 'RUSAK RINGAN'
+                                            : k == 'RB'
+                                                ? 'RUSAK BERAT'
+                                                : k),
+                                      ))
+                                  .toList(),
+                              onChanged: (dataMap[item]!['ada'] as bool)
+                                  ? (val) {
+                                      setState(() =>
+                                          dataMap[item]!['kondisi'] = val!);
+                                      _markAsChanged();
+                                    }
+                                  : null,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
-                ],
-              ),
-            )),
+                )),
           ],
         ),
       ),
@@ -705,7 +747,9 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                     onTap: () async {
                       DateTime? picked = await showDatePicker(
                         context: context,
-                        initialDate: DateTime.tryParse(masaBerlakuController[key]!.text) ?? DateTime.now(),
+                        initialDate: DateTime.tryParse(
+                                masaBerlakuController[key]!.text) ??
+                            DateTime.now(),
                         firstDate: DateTime(2000),
                         lastDate: DateTime(2100),
                       );
@@ -728,7 +772,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        validator: (val) => val == null || val.isEmpty ? 'Wajib diisi' : null,
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Wajib diisi' : null,
                       ),
                     ),
                   ),
@@ -745,8 +790,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
   pw.Widget _buildSafeImage(File file, pw.Font font) {
     try {
       return pw.Image(
-        pw.MemoryImage(file.readAsBytesSync()), 
-        width: 200, 
+        pw.MemoryImage(file.readAsBytesSync()),
+        width: 200,
         height: 150,
         fit: pw.BoxFit.contain,
       );
@@ -761,7 +806,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
         child: pw.Center(
           child: pw.Text(
             'Gagal memuat foto',
-            style: pw.TextStyle(font: font, fontSize: 10, color: PdfColors.grey600),
+            style: pw.TextStyle(
+                font: font, fontSize: 10, color: PdfColors.grey600),
           ),
         ),
       );
@@ -790,12 +836,21 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
       final pdf = pw.Document();
       final font = await PdfGoogleFonts.nunitoRegular();
       final fontBold = await PdfGoogleFonts.nunitoBold();
-      final hariList = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+      final hariList = [
+        'Minggu',
+        'Senin',
+        'Selasa',
+        'Rabu',
+        'Kamis',
+        'Jumat',
+        'Sabtu'
+      ];
       final hari = hariList[tanggal.weekday % 7];
       final logoBytes = await rootBundle.load('assets/logo_jjc.png');
       final logo = pw.MemoryImage(logoBytes.buffer.asUint8List());
 
-      pw.Widget buildTableSection(String sectionTitle, Map<String, Map<String, dynamic>> dataMap) {
+      pw.Widget buildTableSection(
+          String sectionTitle, Map<String, Map<String, dynamic>> dataMap) {
         int idx = 1;
         return pw.Container(
           margin: const pw.EdgeInsets.only(bottom: 8),
@@ -804,20 +859,25 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
             children: [
               // Header section tanpa border
               pw.Container(
-                padding: const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                padding:
+                    const pw.EdgeInsets.symmetric(vertical: 6, horizontal: 8),
                 decoration: const pw.BoxDecoration(
                   color: PdfColors.grey200,
                   borderRadius: pw.BorderRadius.all(pw.Radius.circular(4)),
                 ),
-                                  child: pw.Text(sectionTitle, 
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 13)),
+                child: pw.Text(sectionTitle,
+                    style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold,
+                        font: fontBold,
+                        fontSize: 13)),
               ),
               pw.SizedBox(height: 4),
               // Tabel tanpa border dan lebih compact
               pw.Table(
-                border: pw.TableBorder.all(width: 0), // Menghilangkan semua border dengan width 0
+                border: pw.TableBorder.all(
+                    width: 0), // Menghilangkan semua border dengan width 0
                 columnWidths: {
-                  0: const pw.FixedColumnWidth(25),  // No - diperbesar sedikit
+                  0: const pw.FixedColumnWidth(25), // No - diperbesar sedikit
                   1: const pw.FlexColumnWidth(1.0), // Uraian - diperkecil lagi
                   2: const pw.FixedColumnWidth(35), // Ada - diperbesar lagi
                   3: const pw.FixedColumnWidth(35), // Tidak - diperbesar lagi
@@ -829,39 +889,82 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                 children: [
                   // Header row dengan background abu-abu muda
                   pw.TableRow(
-                    decoration: const pw.BoxDecoration(color: PdfColors.grey100),
+                    decoration:
+                        const pw.BoxDecoration(color: PdfColors.grey100),
                     children: [
                       pw.Container(
-                        padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 2),
-                        child: pw.Center(child: pw.Text('NO', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 10))),
+                        padding: const pw.EdgeInsets.symmetric(
+                            vertical: 3, horizontal: 2),
+                        child: pw.Center(
+                            child: pw.Text('NO',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    font: fontBold,
+                                    fontSize: 10))),
                       ),
                       pw.Container(
-                        padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4),
-                        child: pw.Center(child: pw.Text('URAIAN', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 10))),
-                      ),
-                      pw.Container(
-                        padding: const pw.EdgeInsets.symmetric(vertical: 3),
-                        child: pw.Center(child: pw.Text('ADA', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 10))),
-                      ),
-                      pw.Container(
-                        padding: const pw.EdgeInsets.symmetric(vertical: 3),
-                        child: pw.Center(child: pw.Text('TIDAK', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 9))),
-                      ),
-                      pw.Container(
-                        padding: const pw.EdgeInsets.symmetric(vertical: 3),
-                        child: pw.Center(child: pw.Text('JUMLAH', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 9))),
-                      ),
-                      pw.Container(
-                        padding: const pw.EdgeInsets.symmetric(vertical: 3),
-                        child: pw.Center(child: pw.Text('BAIK', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 10))),
+                        padding: const pw.EdgeInsets.symmetric(
+                            vertical: 3, horizontal: 4),
+                        child: pw.Center(
+                            child: pw.Text('URAIAN',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    font: fontBold,
+                                    fontSize: 10))),
                       ),
                       pw.Container(
                         padding: const pw.EdgeInsets.symmetric(vertical: 3),
-                        child: pw.Center(child: pw.Text('RR', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 10))),
+                        child: pw.Center(
+                            child: pw.Text('ADA',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    font: fontBold,
+                                    fontSize: 10))),
                       ),
                       pw.Container(
                         padding: const pw.EdgeInsets.symmetric(vertical: 3),
-                        child: pw.Center(child: pw.Text('RB', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 10))),
+                        child: pw.Center(
+                            child: pw.Text('TIDAK',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    font: fontBold,
+                                    fontSize: 9))),
+                      ),
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(vertical: 3),
+                        child: pw.Center(
+                            child: pw.Text('JUMLAH',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    font: fontBold,
+                                    fontSize: 9))),
+                      ),
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(vertical: 3),
+                        child: pw.Center(
+                            child: pw.Text('BAIK',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    font: fontBold,
+                                    fontSize: 10))),
+                      ),
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(vertical: 3),
+                        child: pw.Center(
+                            child: pw.Text('RR',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    font: fontBold,
+                                    fontSize: 10))),
+                      ),
+                      pw.Container(
+                        padding: const pw.EdgeInsets.symmetric(vertical: 3),
+                        child: pw.Center(
+                            child: pw.Text('RB',
+                                style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                    font: fontBold,
+                                    fontSize: 10))),
                       ),
                     ],
                   ),
@@ -876,50 +979,61 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                       ),
                       children: [
                         pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(vertical: 2, horizontal: 2),
-                          child: pw.Center(child: pw.Text(no.toString(), style: pw.TextStyle(font: font, fontSize: 10))),
+                          padding: const pw.EdgeInsets.symmetric(
+                              vertical: 2, horizontal: 2),
+                          child: pw.Center(
+                              child: pw.Text(no.toString(),
+                                  style:
+                                      pw.TextStyle(font: font, fontSize: 10))),
                         ),
                         pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(vertical: 2, horizontal: 4),
-                          child: pw.Text(entry.key, style: pw.TextStyle(font: font, fontSize: 10)),
+                          padding: const pw.EdgeInsets.symmetric(
+                              vertical: 2, horizontal: 4),
+                          child: pw.Text(entry.key,
+                              style: pw.TextStyle(font: font, fontSize: 10)),
                         ),
                         pw.Container(
                           padding: const pw.EdgeInsets.symmetric(vertical: 2),
                           child: pw.Center(
-                            child: ada 
-                              ? pw.Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const pw.BoxDecoration(
-                                    color: PdfColors.black,
-                                    shape: pw.BoxShape.circle,
-                                  ),
-                                )
-                              : pw.SizedBox(width: 8, height: 8),
+                            child: ada
+                                ? pw.Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const pw.BoxDecoration(
+                                      color: PdfColors.black,
+                                      shape: pw.BoxShape.circle,
+                                    ),
+                                  )
+                                : pw.SizedBox(width: 8, height: 8),
                           ),
                         ),
                         pw.Container(
                           padding: const pw.EdgeInsets.symmetric(vertical: 2),
                           child: pw.Center(
-                            child: !ada 
-                              ? pw.Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const pw.BoxDecoration(
-                                    color: PdfColors.black,
-                                    shape: pw.BoxShape.circle,
-                                  ),
-                                )
-                              : pw.SizedBox(width: 8, height: 8),
+                            child: !ada
+                                ? pw.Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const pw.BoxDecoration(
+                                      color: PdfColors.black,
+                                      shape: pw.BoxShape.circle,
+                                    ),
+                                  )
+                                : pw.SizedBox(width: 8, height: 8),
                           ),
                         ),
                         pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                          padding: const pw.EdgeInsets.symmetric(
+                              vertical: 2, horizontal: 2),
                           child: pw.Center(
                             child: pw.Text(
-                              (entry.value['jumlah'] as TextEditingController).text.isNotEmpty 
-                                ? (entry.value['jumlah'] as TextEditingController).text 
-                                : '-',
+                              (entry.value['jumlah'] as TextEditingController)
+                                      .text
+                                      .isNotEmpty
+                                  ? (entry.value['jumlah']
+                                          as TextEditingController)
+                                      .text
+                                  : '-',
                               style: pw.TextStyle(font: font, fontSize: 9),
                             ),
                           ),
@@ -927,46 +1041,46 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                         pw.Container(
                           padding: const pw.EdgeInsets.symmetric(vertical: 2),
                           child: pw.Center(
-                            child: kondisi == 'BAIK' 
-                              ? pw.Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const pw.BoxDecoration(
-                                    color: PdfColors.black,
-                                    shape: pw.BoxShape.circle,
-                                  ),
-                                )
-                              : pw.SizedBox(width: 8, height: 8),
+                            child: kondisi == 'BAIK'
+                                ? pw.Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const pw.BoxDecoration(
+                                      color: PdfColors.black,
+                                      shape: pw.BoxShape.circle,
+                                    ),
+                                  )
+                                : pw.SizedBox(width: 8, height: 8),
                           ),
                         ),
                         pw.Container(
                           padding: const pw.EdgeInsets.symmetric(vertical: 2),
                           child: pw.Center(
-                            child: kondisi == 'RR' 
-                              ? pw.Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const pw.BoxDecoration(
-                                    color: PdfColors.black,
-                                    shape: pw.BoxShape.circle,
-                                  ),
-                                )
-                              : pw.SizedBox(width: 8, height: 8),
+                            child: kondisi == 'RR'
+                                ? pw.Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const pw.BoxDecoration(
+                                      color: PdfColors.black,
+                                      shape: pw.BoxShape.circle,
+                                    ),
+                                  )
+                                : pw.SizedBox(width: 8, height: 8),
                           ),
                         ),
                         pw.Container(
                           padding: const pw.EdgeInsets.symmetric(vertical: 2),
                           child: pw.Center(
-                            child: kondisi == 'RB' 
-                              ? pw.Container(
-                                  width: 8,
-                                  height: 8,
-                                  decoration: const pw.BoxDecoration(
-                                    color: PdfColors.black,
-                                    shape: pw.BoxShape.circle,
-                                  ),
-                                )
-                              : pw.SizedBox(width: 8, height: 8),
+                            child: kondisi == 'RB'
+                                ? pw.Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const pw.BoxDecoration(
+                                      color: PdfColors.black,
+                                      shape: pw.BoxShape.circle,
+                                    ),
+                                  )
+                                : pw.SizedBox(width: 8, height: 8),
                           ),
                         ),
                       ],
@@ -995,29 +1109,35 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
-                      pw.Text('FORM INSPEKSI KAMTIB', 
-                        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 11)),
-                      pw.Text('HARI: $hari | TANGGAL: ${tanggal.toLocal().toString().split(' ')[0]}', 
-                        style: pw.TextStyle(font: font, fontSize: 9)),
-                      pw.Text('NO. POLISI: ${nopolController.text} | IDENTITAS: ${identitasKendaraanController.text}', 
-                        style: pw.TextStyle(font: font, fontSize: 9)),
-                      pw.Text('LOKASI: ${lokasiController.text.isNotEmpty ? lokasiController.text : '-'}', 
-                        style: pw.TextStyle(font: font, fontSize: 9)),
+                      pw.Text('FORM INSPEKSI KAMTIB',
+                          style: pw.TextStyle(
+                              fontWeight: pw.FontWeight.bold,
+                              font: fontBold,
+                              fontSize: 11)),
+                      pw.Text(
+                          'HARI: $hari | TANGGAL: ${tanggal.toLocal().toString().split(' ')[0]}',
+                          style: pw.TextStyle(font: font, fontSize: 9)),
+                      pw.Text(
+                          'NO. POLISI: ${nopolController.text} | IDENTITAS: ${identitasKendaraanController.text}',
+                          style: pw.TextStyle(font: font, fontSize: 9)),
+                      pw.Text(
+                          'LOKASI: ${lokasiController.text.isNotEmpty ? lokasiController.text : '-'}',
+                          style: pw.TextStyle(font: font, fontSize: 9)),
                     ],
                   ),
                 ],
               ),
             ),
             pw.SizedBox(height: 4),
-            
+
             // Kelengkapan Petugas
             buildTableSection('KELENGKAPAN PETUGAS', kelengkapanPetugas),
             pw.SizedBox(height: 4),
-            
+
             // Kelengkapan Kendaraan
             buildTableSection('KELENGKAPAN KENDARAAN', kelengkapanKendaraan),
             pw.SizedBox(height: 4),
-            
+
             // Masa Berlaku Dokumen
             pw.Container(
               padding: const pw.EdgeInsets.all(6),
@@ -1028,32 +1148,50 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
               child: pw.Column(
                 crossAxisAlignment: pw.CrossAxisAlignment.start,
                 children: [
-                  pw.Text('MASA BERLAKU DOKUMEN', 
-                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 10)),
+                  pw.Text('MASA BERLAKU DOKUMEN',
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          font: fontBold,
+                          fontSize: 10)),
                   pw.SizedBox(height: 3),
                   pw.Table(
-                    border: pw.TableBorder.all(width: 0.5, color: PdfColors.grey300),
+                    border: pw.TableBorder.all(
+                        width: 0.5, color: PdfColors.grey300),
                     columnWidths: {
-                      for (int i = 0; i < masaBerlakuController.length; i++) 
+                      for (int i = 0; i < masaBerlakuController.length; i++)
                         i: const pw.FlexColumnWidth(1),
                     },
                     children: [
                       pw.TableRow(
-                        decoration: const pw.BoxDecoration(color: PdfColors.grey100),
-                        children: masaBerlakuController.keys.map((k) => pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(vertical: 2, horizontal: 3),
-                          child: pw.Center(
-                            child: pw.Text(k, style: pw.TextStyle(font: fontBold, fontSize: 8, fontWeight: pw.FontWeight.bold)),
-                          ),
-                        )).toList(),
+                        decoration:
+                            const pw.BoxDecoration(color: PdfColors.grey100),
+                        children: masaBerlakuController.keys
+                            .map((k) => pw.Container(
+                                  padding: const pw.EdgeInsets.symmetric(
+                                      vertical: 2, horizontal: 3),
+                                  child: pw.Center(
+                                    child: pw.Text(k,
+                                        style: pw.TextStyle(
+                                            font: fontBold,
+                                            fontSize: 8,
+                                            fontWeight: pw.FontWeight.bold)),
+                                  ),
+                                ))
+                            .toList(),
                       ),
                       pw.TableRow(
-                        children: masaBerlakuController.values.map((v) => pw.Container(
-                          padding: const pw.EdgeInsets.symmetric(vertical: 2, horizontal: 3),
-                          child: pw.Center(
-                            child: pw.Text(v.text.isNotEmpty ? v.text : '-', style: pw.TextStyle(font: font, fontSize: 8)),
-                          ),
-                        )).toList(),
+                        children: masaBerlakuController.values
+                            .map((v) => pw.Container(
+                                  padding: const pw.EdgeInsets.symmetric(
+                                      vertical: 2, horizontal: 3),
+                                  child: pw.Center(
+                                    child: pw.Text(
+                                        v.text.isNotEmpty ? v.text : '-',
+                                        style: pw.TextStyle(
+                                            font: font, fontSize: 8)),
+                                  ),
+                                ))
+                            .toList(),
                       ),
                     ],
                   ),
@@ -1061,7 +1199,7 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
               ),
             ),
             pw.SizedBox(height: 30),
-            
+
             // Tanda tangan - Petugas 1 dan Petugas 2 di atas dengan jarak vertikal yang lebih jauh
             pw.Container(
               margin: const pw.EdgeInsets.symmetric(horizontal: 25),
@@ -1070,43 +1208,51 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                 children: [
                   pw.Column(
                     children: [
-                      pw.Text('Petugas 1', style: pw.TextStyle(font: fontBold, fontSize: 9)),
+                      pw.Text('Petugas 1',
+                          style: pw.TextStyle(font: fontBold, fontSize: 9)),
                       pw.SizedBox(height: 25),
-                      petugas1Signature != null 
-                        ? pw.Image(pw.MemoryImage(petugas1Signature!), width: 120, height: 50)
-                        : pw.Container(
-                            width: 120,
-                            height: 50,
-                            decoration: const pw.BoxDecoration(
-                              border: pw.Border(bottom: pw.BorderSide(width: 1)),
+                      petugas1Signature != null
+                          ? pw.Image(pw.MemoryImage(petugas1Signature!),
+                              width: 120, height: 50)
+                          : pw.Container(
+                              width: 120,
+                              height: 50,
+                              decoration: const pw.BoxDecoration(
+                                border:
+                                    pw.Border(bottom: pw.BorderSide(width: 1)),
+                              ),
                             ),
-                          ),
                       pw.SizedBox(height: 6),
-                      pw.Text('(${petugas1Controller.text})', style: pw.TextStyle(font: font, fontSize: 7)),
+                      pw.Text('(${petugas1Controller.text})',
+                          style: pw.TextStyle(font: font, fontSize: 7)),
                     ],
                   ),
                   pw.Column(
                     children: [
-                      pw.Text('Petugas 2', style: pw.TextStyle(font: fontBold, fontSize: 9)),
+                      pw.Text('Petugas 2',
+                          style: pw.TextStyle(font: fontBold, fontSize: 9)),
                       pw.SizedBox(height: 25),
-                      petugas2Signature != null 
-                        ? pw.Image(pw.MemoryImage(petugas2Signature!), width: 120, height: 50)
-                        : pw.Container(
-                            width: 120,
-                            height: 50,
-                            decoration: const pw.BoxDecoration(
-                              border: pw.Border(bottom: pw.BorderSide(width: 1)),
+                      petugas2Signature != null
+                          ? pw.Image(pw.MemoryImage(petugas2Signature!),
+                              width: 120, height: 50)
+                          : pw.Container(
+                              width: 120,
+                              height: 50,
+                              decoration: const pw.BoxDecoration(
+                                border:
+                                    pw.Border(bottom: pw.BorderSide(width: 1)),
+                              ),
                             ),
-                          ),
                       pw.SizedBox(height: 6),
-                      pw.Text('(${petugas2Controller.text})', style: pw.TextStyle(font: font, fontSize: 7)),
+                      pw.Text('(${petugas2Controller.text})',
+                          style: pw.TextStyle(font: font, fontSize: 7)),
                     ],
                   ),
                 ],
               ),
             ),
             pw.SizedBox(height: 70),
-            
+
             // Tanda tangan - Manager dan PT JJC di bawah dengan layout yang sama
             pw.Container(
               margin: const pw.EdgeInsets.symmetric(horizontal: 25),
@@ -1115,36 +1261,46 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                 children: [
                   pw.Column(
                     children: [
-                      pw.Text('Manager Traffic', style: pw.TextStyle(font: fontBold, fontSize: 9)),
+                      pw.Text('Manager Traffic',
+                          style: pw.TextStyle(font: fontBold, fontSize: 9)),
                       pw.SizedBox(height: 25),
-                      managerSignature != null 
-                        ? pw.Image(pw.MemoryImage(managerSignature!), width: 120, height: 50)
-                        : pw.Container(
-                            width: 120,
-                            height: 50,
-                            decoration: const pw.BoxDecoration(
-                              border: pw.Border(bottom: pw.BorderSide(width: 1)),
+                      managerSignature != null
+                          ? pw.Image(pw.MemoryImage(managerSignature!),
+                              width: 120, height: 50)
+                          : pw.Container(
+                              width: 120,
+                              height: 50,
+                              decoration: const pw.BoxDecoration(
+                                border:
+                                    pw.Border(bottom: pw.BorderSide(width: 1)),
+                              ),
                             ),
-                          ),
                       pw.SizedBox(height: 8),
-                      pw.Text('(${managerNameController.text.isNotEmpty ? managerNameController.text : '_____________'})', style: pw.TextStyle(font: font, fontSize: 7)),
+                      pw.Text(
+                          '(${managerNameController.text.isNotEmpty ? managerNameController.text : '_____________'})',
+                          style: pw.TextStyle(font: font, fontSize: 7)),
                     ],
                   ),
                   pw.Column(
                     children: [
-                      pw.Text('PT JJC', style: pw.TextStyle(font: fontBold, fontSize: 9)),
+                      pw.Text('PT JJC',
+                          style: pw.TextStyle(font: fontBold, fontSize: 9)),
                       pw.SizedBox(height: 25),
-                      jjcSignature != null 
-                        ? pw.Image(pw.MemoryImage(jjcSignature!), width: 120, height: 50)
-                        : pw.Container(
-                            width: 120,
-                            height: 50,
-                            decoration: const pw.BoxDecoration(
-                              border: pw.Border(bottom: pw.BorderSide(width: 1)),
+                      jjcSignature != null
+                          ? pw.Image(pw.MemoryImage(jjcSignature!),
+                              width: 120, height: 50)
+                          : pw.Container(
+                              width: 120,
+                              height: 50,
+                              decoration: const pw.BoxDecoration(
+                                border:
+                                    pw.Border(bottom: pw.BorderSide(width: 1)),
+                              ),
                             ),
-                          ),
                       pw.SizedBox(height: 8),
-                      pw.Text('(${jjcNameController.text.isNotEmpty ? jjcNameController.text : '_____________'})', style: pw.TextStyle(font: font, fontSize: 7)),
+                      pw.Text(
+                          '(${jjcNameController.text.isNotEmpty ? jjcNameController.text : '_____________'})',
+                          style: pw.TextStyle(font: font, fontSize: 7)),
                     ],
                   ),
                 ],
@@ -1155,272 +1311,118 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
         ),
       );
 
-      // Tidak ada halaman 2 untuk Kamtib - semua ada di halaman 1
-      // Halaman foto dimulai langsung
-      if (false) { // Disable halaman 2
-        pdf.addPage(
-          pw.MultiPage(
-            margin: const pw.EdgeInsets.symmetric(horizontal: 50, vertical: 10),
-            maxPages: 1,
-            build: (context) => [
-              // Header yang sama
-              pw.Container(
-                padding: const pw.EdgeInsets.all(8),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Image(logo, width: 150, height: 150),
-                    pw.SizedBox(height: 10),
-                    pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text('FORM INSPEKSI KAMTIB', 
-                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 12)),
-                        pw.Text('HARI: $hari | TANGGAL: ${tanggal.toLocal().toString().split(' ')[0]}', 
-                          style: pw.TextStyle(font: font, fontSize: 11)),
-                        pw.Text('NO. POLISI: ${nopolController.text} | IDENTITAS: ${identitasKendaraanController.text}', 
-                          style: pw.TextStyle(font: font, fontSize: 11)),
-                        pw.Text('LOKASI: ${lokasiController.text.isNotEmpty ? lokasiController.text : '-'}', 
-                          style: pw.TextStyle(font: font, fontSize: 11)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              pw.SizedBox(height: 6),
-              
-              // Kelengkapan Kendaraan
-              buildTableSection('KELENGKAPAN KENDARAAN', kelengkapanKendaraan),
-              pw.SizedBox(height: 8),
-              
-              // Masa Berlaku Dokumen yang lebih compact
-              pw.Container(
-                padding: const pw.EdgeInsets.all(8),
-                decoration: pw.BoxDecoration(
-                  border: pw.Border.all(width: 0.5, color: PdfColors.grey300),
-                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(4)),
-                ),
-                child: pw.Column(
-                  crossAxisAlignment: pw.CrossAxisAlignment.start,
-                  children: [
-                    pw.Text('MASA BERLAKU DOKUMEN', 
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 12)),
-                    pw.SizedBox(height: 4),
-                    pw.Table(
-                      border: pw.TableBorder.all(width: 0),
-                      columnWidths: {
-                        for (int i = 0; i < masaBerlakuController.length; i++) 
-                          i: const pw.FlexColumnWidth(1),
-                      },
-                      children: [
-                        pw.TableRow(
-                          decoration: const pw.BoxDecoration(color: PdfColors.grey100),
-                          children: masaBerlakuController.keys.map((k) => pw.Container(
-                            padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4),
-                                                          child: pw.Center(
-                                child: pw.Text(k, style: pw.TextStyle(font: fontBold, fontSize: 10, fontWeight: pw.FontWeight.bold)),
-                              ),
-                            )).toList(),
-                          ),
-                          pw.TableRow(
-                            children: masaBerlakuController.values.map((v) => pw.Container(
-                              padding: const pw.EdgeInsets.symmetric(vertical: 3, horizontal: 4),
-                              child: pw.Center(
-                                child: pw.Text(v.text.isNotEmpty ? v.text : '-', style: pw.TextStyle(font: font, fontSize: 10)),
-                              ),
-                          )).toList(),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              pw.SizedBox(height: 30),
-              
-              // Tanda tangan PT JMTO Manager Traffic dan PT JJC - diposisikan lebih melebar ke kiri dan kanan
-              pw.Container(
-                margin: const pw.EdgeInsets.symmetric(horizontal: 25),
-                child: pw.Row(
-                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                  children: [
-                    // Tanda tangan PT JMTO Manager Traffic
-                    pw.Column(
-                      children: [
-                        pw.Text('Mengetahui,', style: pw.TextStyle(font: font, fontSize: 11)),
-                        pw.Text('PT JMTO', style: pw.TextStyle(font: fontBold, fontSize: 11, fontWeight: pw.FontWeight.bold)),
-                        pw.SizedBox(height: 15),
-                                            managerSignature != null 
-                      ? pw.Image(pw.MemoryImage(managerSignature!), width: 130, height: 55)
-                      : pw.Container(
-                          width: 130,
-                          height: 55,
-                              decoration: const pw.BoxDecoration(
-                                border: pw.Border(bottom: pw.BorderSide(width: 1)),
-                              ),
-                            ),
-                        pw.SizedBox(height: 4),
-                        pw.Text('Manager Traffic', style: pw.TextStyle(font: font, fontSize: 9)),
-                      ],
-                    ),
-                    // Tanda tangan PT JJC dengan NIK
-                    pw.Column(
-                      children: [
-                        pw.Text('Mengetahui,', style: pw.TextStyle(font: font, fontSize: 11)),
-                        pw.Text('PT.JJC', style: pw.TextStyle(font: fontBold, fontSize: 11, fontWeight: pw.FontWeight.bold)),
-                        pw.SizedBox(height: 15),
-                                            jjcSignature != null 
-                      ? pw.Image(pw.MemoryImage(jjcSignature!), width: 130, height: 55)
-                      : pw.Container(
-                          width: 130,
-                          height: 55,
-                              decoration: const pw.BoxDecoration(
-                                border: pw.Border(bottom: pw.BorderSide(width: 1)),
-                              ),
-                            ),
-                        pw.SizedBox(height: 4),
-                        pw.Text('NIK', style: pw.TextStyle(font: font, fontSize: 9)),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      }
+      // Halaman 3 - Lampiran (jika ada foto)
+      if (fotoStnk != null ||
+          fotoSim1 != null ||
+          fotoSim2 != null ||
+          fotoKir != null ||
+          fotoService != null ||
+          fotoBbm != null) {
+        // Buat list foto yang ada
+        List<Map<String, dynamic>> fotoList = [];
+        if (fotoStnk != null)
+          fotoList.add({'title': 'Bukti STNK:', 'file': fotoStnk});
+        if (fotoSim1 != null)
+          fotoList.add({'title': 'Bukti SIM Operator 1:', 'file': fotoSim1});
+        if (fotoSim2 != null)
+          fotoList.add({'title': 'Bukti SIM Operator 2:', 'file': fotoSim2});
+        if (fotoKir != null)
+          fotoList.add({'title': 'Bukti KIR:', 'file': fotoKir});
+        if (fotoService != null)
+          fotoList.add({'title': 'Bukti Service:', 'file': fotoService});
+        if (fotoBbm != null)
+          fotoList.add({'title': 'Bukti BBM:', 'file': fotoBbm});
 
+        // Bagi foto menjadi halaman dengan maksimal 3 foto per halaman
+        for (int i = 0; i < fotoList.length; i += 3) {
+          List<Map<String, dynamic>> pageFotos =
+              fotoList.skip(i).take(3).toList();
 
-
-              // Halaman 3 - Lampiran (jika ada foto)
-        if (fotoStnk != null || fotoSim1 != null || fotoSim2 != null || fotoKir != null || 
-            fotoService != null || fotoBbm != null) {
-          
-          // Buat list foto yang ada
-          List<Map<String, dynamic>> fotoList = [];
-          if (fotoStnk != null) fotoList.add({'title': 'Bukti STNK:', 'file': fotoStnk});
-          if (fotoSim1 != null) fotoList.add({'title': 'Bukti SIM Operator 1:', 'file': fotoSim1});
-          if (fotoSim2 != null) fotoList.add({'title': 'Bukti SIM Operator 2:', 'file': fotoSim2});
-          if (fotoKir != null) fotoList.add({'title': 'Bukti KIR:', 'file': fotoKir});
-          if (fotoService != null) fotoList.add({'title': 'Bukti Service:', 'file': fotoService});
-          if (fotoBbm != null) fotoList.add({'title': 'Bukti BBM:', 'file': fotoBbm});
-
-          // Bagi foto menjadi halaman dengan maksimal 3 foto per halaman
-          for (int i = 0; i < fotoList.length; i += 3) {
-            List<Map<String, dynamic>> pageFotos = fotoList.skip(i).take(3).toList();
-            
-            pdf.addPage(
-              pw.MultiPage(
-                margin: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                build: (context) => [
-                  // Header yang konsisten dengan halaman lain
-                  pw.Container(
-                    padding: const pw.EdgeInsets.all(6),
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Image(logo, width: 120, height: 120),
-                        pw.SizedBox(height: 8),
-                        pw.Column(
-                          crossAxisAlignment: pw.CrossAxisAlignment.start,
-                          children: [
-                            pw.Text('FORM INSPEKSI KAMTIB', 
-                              style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 11)),
-                            pw.Text('HARI: $hari | TANGGAL: ${tanggal.toLocal().toString().split(' ')[0]}', 
-                              style: pw.TextStyle(font: font, fontSize: 9)),
-                            pw.Text('NO. POLISI: ${nopolController.text} | IDENTITAS: ${identitasKendaraanController.text}', 
-                              style: pw.TextStyle(font: font, fontSize: 9)),
-                            pw.Text('LOKASI: ${lokasiController.text.isNotEmpty ? lokasiController.text : '-'}', 
-                              style: pw.TextStyle(font: font, fontSize: 9)),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  pw.SizedBox(height: 10),
-                  
-                  // Judul Lampiran Foto
-                  pw.Container(
-                    padding: const pw.EdgeInsets.all(12),
-                    decoration: const pw.BoxDecoration(
-                      color: PdfColors.grey100,
-                      borderRadius: pw.BorderRadius.all(pw.Radius.circular(8)),
-                    ),
-                    child: pw.Text('LAMPIRAN FOTO BUKTI', 
-                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 16)),
-                  ),
-                  pw.SizedBox(height: 15),
-                  ...pageFotos.map((foto) => [
-                    pw.Container(
-                      padding: const pw.EdgeInsets.all(12),
-                      decoration: pw.BoxDecoration(
-                        border: pw.Border.all(width: 1, color: PdfColors.grey400),
-                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
-                      ),
-                      child: pw.Column(
+          pdf.addPage(
+            pw.MultiPage(
+              margin:
+                  const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              build: (context) => [
+                // Header yang konsisten dengan halaman lain
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(6),
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Image(logo, width: 120, height: 120),
+                      pw.SizedBox(height: 8),
+                      pw.Column(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text(foto['title'], 
-                            style: pw.TextStyle(fontWeight: pw.FontWeight.bold, font: fontBold, fontSize: 12)),
-                          pw.SizedBox(height: 8),
-                                                  pw.Center(
-                          child: _buildSafeImage(foto['file'], font),
-                        ),
+                          pw.Text('FORM INSPEKSI KAMTIB',
+                              style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  font: fontBold,
+                                  fontSize: 11)),
+                          pw.Text(
+                              'HARI: $hari | TANGGAL: ${tanggal.toLocal().toString().split(' ')[0]}',
+                              style: pw.TextStyle(font: font, fontSize: 9)),
+                          pw.Text(
+                              'NO. POLISI: ${nopolController.text} | IDENTITAS: ${identitasKendaraanController.text}',
+                              style: pw.TextStyle(font: font, fontSize: 9)),
+                          pw.Text(
+                              'LOKASI: ${lokasiController.text.isNotEmpty ? lokasiController.text : '-'}',
+                              style: pw.TextStyle(font: font, fontSize: 9)),
                         ],
                       ),
-                    ),
-                    pw.SizedBox(height: 10),
-                  ]).expand((element) => element).toList(),
-                  pw.SizedBox(height: 20),
-                  
-                  // Tanda tangan di halaman foto dengan layout yang sama
-                  pw.SizedBox(height: 20),
-                  pw.Container(
-                    margin: const pw.EdgeInsets.symmetric(horizontal: 25),
-                    child: pw.Row(
-                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                      children: [
-                        pw.Column(
-                          children: [
-                            pw.Text('Manager Traffic', style: pw.TextStyle(font: fontBold, fontSize: 9)),
-                            pw.SizedBox(height: 25),
-                            managerSignature != null 
-                              ? pw.Image(pw.MemoryImage(managerSignature!), width: 120, height: 50)
-                              : pw.Container(
-                                  width: 120,
-                                  height: 50,
-                                  decoration: const pw.BoxDecoration(
-                                    border: pw.Border(bottom: pw.BorderSide(width: 1)),
-                                  ),
-                                ),
-                            pw.SizedBox(height: 8),
-                            pw.Text('(${managerNameController.text.isNotEmpty ? managerNameController.text : '_____________'})', style: pw.TextStyle(font: font, fontSize: 7)),
-                          ],
-                        ),
-                        pw.Column(
-                          children: [
-                            pw.Text('PT JJC', style: pw.TextStyle(font: fontBold, fontSize: 9)),
-                            pw.SizedBox(height: 25),
-                            jjcSignature != null 
-                              ? pw.Image(pw.MemoryImage(jjcSignature!), width: 120, height: 50)
-                              : pw.Container(
-                                  width: 120,
-                                  height: 50,
-                                  decoration: const pw.BoxDecoration(
-                                    border: pw.Border(bottom: pw.BorderSide(width: 1)),
-                                  ),
-                                ),
-                            pw.SizedBox(height: 8),
-                            pw.Text('(${jjcNameController.text.isNotEmpty ? jjcNameController.text : '_____________'})', style: pw.TextStyle(font: font, fontSize: 7)),
-                          ],
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          }
+                ),
+                pw.SizedBox(height: 10),
+
+                // Judul Lampiran Foto
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(12),
+                  decoration: const pw.BoxDecoration(
+                    color: PdfColors.grey100,
+                    borderRadius: pw.BorderRadius.all(pw.Radius.circular(8)),
+                  ),
+                  child: pw.Text('LAMPIRAN FOTO BUKTI',
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          font: fontBold,
+                          fontSize: 16)),
+                ),
+                pw.SizedBox(height: 15),
+                ...pageFotos
+                    .map((foto) => [
+                          pw.Container(
+                            padding: const pw.EdgeInsets.all(12),
+                            decoration: pw.BoxDecoration(
+                              border: pw.Border.all(
+                                  width: 1, color: PdfColors.grey400),
+                              borderRadius: const pw.BorderRadius.all(
+                                  pw.Radius.circular(8)),
+                            ),
+                            child: pw.Column(
+                              crossAxisAlignment: pw.CrossAxisAlignment.start,
+                              children: [
+                                pw.Text(foto['title'],
+                                    style: pw.TextStyle(
+                                        fontWeight: pw.FontWeight.bold,
+                                        font: fontBold,
+                                        fontSize: 12)),
+                                pw.SizedBox(height: 8),
+                                pw.Center(
+                                  child: _buildSafeImage(foto['file'], font),
+                                ),
+                              ],
+                            ),
+                          ),
+                          pw.SizedBox(height: 10),
+                        ])
+                    .expand((element) => element),
+                pw.SizedBox(height: 20),
+              ],
+            ),
+          );
         }
+      }
 
       // Generate and print PDF with delay
       await Future.delayed(const Duration(milliseconds: 500));
@@ -1434,25 +1436,27 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
       // Simpan riwayat inspeksi ke Hive
       final box = Hive.box('inspection_history');
       final id = DateTime.now().millisecondsSinceEpoch.toString();
-      
+
       // Simpan PDF ke storage lokal
       final pdfPath = await PdfStorageService.savePdf(id, pdf);
-      
+
       // Copy ke Downloads dengan nama yang sesuai
-              final vehicleName = 'Kamtib';
-      final vehicleId = nopolController.text.isNotEmpty ? nopolController.text : 'Unknown';
-      final fileName = '${vehicleName}_${vehicleId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
-      
+      const vehicleName = 'Kamtib';
+      final vehicleId =
+          nopolController.text.isNotEmpty ? nopolController.text : 'Unknown';
+      final fileName =
+          '${vehicleName}_${vehicleId}_${DateTime.now().millisecondsSinceEpoch}.pdf';
+
       final downloadsDir = Directory('/storage/emulated/0/Download');
       if (!await downloadsDir.exists()) {
         await downloadsDir.create(recursive: true);
       }
       final downloadFile = File('${downloadsDir.path}/$fileName');
       await downloadFile.writeAsBytes(await pdf.save());
-      
+
       box.add({
         'id': id,
-                  'jenis': 'Kamtib',
+        'jenis': 'Kamtib',
         'tanggal': tanggal.toIso8601String(),
         'nopol': nopolController.text,
         'petugas1': petugas1Controller.text,
@@ -1460,15 +1464,15 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
         'lokasi': lokasiController.text,
         'pdfPath': pdfPath, // Path ke file PDF yang tersimpan
         'kelengkapanPetugas': kelengkapanPetugas.map((k, v) => MapEntry(k, {
-          'ada': v['ada'],
-          'jumlah': v['jumlah'].text,
-          'kondisi': v['kondisi'],
-        })),
+              'ada': v['ada'],
+              'jumlah': v['jumlah'].text,
+              'kondisi': v['kondisi'],
+            })),
         'kelengkapanKendaraan': kelengkapanKendaraan.map((k, v) => MapEntry(k, {
-          'ada': v['ada'],
-          'jumlah': v['jumlah'].text,
-          'kondisi': v['kondisi'],
-        })),
+              'ada': v['ada'],
+              'jumlah': v['jumlah'].text,
+              'kondisi': v['kondisi'],
+            })),
         'masaBerlaku': masaBerlakuController.map((k, v) => MapEntry(k, v.text)),
         'fotos': {
           'stnk': fotoStnk?.path,
@@ -1478,7 +1482,7 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
           'service': fotoService?.path,
           'bbm': fotoBbm?.path,
         },
-            });
+      });
 
       // Clear draft after successful PDF generation
       await _clearDraft();
@@ -1487,12 +1491,13 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-          builder: (context) => SuccessScreen(
-            title: 'Form Kamtib Berhasil Disimpan',
-            message: 'Data inspeksi kendaraan Kamtib telah berhasil disimpan dan PDF telah dibuat.',
-            pdfPath: downloadFile.path,
+            builder: (context) => SuccessScreen(
+              title: 'Form Kamtib Berhasil Disimpan',
+              message:
+                  'Data inspeksi kendaraan Kamtib telah berhasil disimpan dan PDF telah dibuat.',
+              pdfPath: downloadFile.path,
+            ),
           ),
-        ),
         );
       }
     } catch (e) {
@@ -1519,8 +1524,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
         actions: [
           // Draft indicator
           Container(
-            margin: EdgeInsets.only(right: 16),
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            margin: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: _hasUnsavedChanges ? Colors.orange : Colors.grey,
               borderRadius: BorderRadius.circular(12),
@@ -1533,10 +1538,10 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                   color: Colors.white,
                   size: 16,
                 ),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
                   _hasUnsavedChanges ? 'Draft' : 'Saved',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -1557,7 +1562,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
               // Card Informasi Dasar
               Card(
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -1581,7 +1587,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        validator: (val) => val == null || val.isEmpty ? 'Wajib diisi' : null,
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Wajib diisi' : null,
                         onChanged: (value) => _markAsChanged(),
                       ),
                       const SizedBox(height: 16),
@@ -1594,7 +1601,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        validator: (val) => val == null || val.isEmpty ? 'Wajib diisi' : null,
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Wajib diisi' : null,
                         onChanged: (value) => _markAsChanged(),
                       ),
                       const SizedBox(height: 16),
@@ -1607,7 +1615,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        validator: (val) => val == null || val.isEmpty ? 'Wajib diisi' : null,
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Wajib diisi' : null,
                         onChanged: (value) => _markAsChanged(),
                       ),
                       const SizedBox(height: 16),
@@ -1620,7 +1629,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        validator: (val) => val == null || val.isEmpty ? 'Wajib diisi' : null,
+                        validator: (val) =>
+                            val == null || val.isEmpty ? 'Wajib diisi' : null,
                         onChanged: (value) => _markAsChanged(),
                       ),
                       const SizedBox(height: 16),
@@ -1664,7 +1674,8 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                                   }
                                 }
                               },
-                              icon: const Icon(Icons.my_location, color: Colors.white),
+                              icon: const Icon(Icons.my_location,
+                                  color: Colors.white),
                               tooltip: 'Dapatkan Lokasi',
                             ),
                           ),
@@ -1675,18 +1686,19 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // Checklist sections
               buildChecklist('Kelengkapan Petugas', kelengkapanPetugas),
               buildChecklist('Kelengkapan Kendaraan', kelengkapanKendaraan),
               buildMasaBerlakuFields(),
-              
+
               const SizedBox(height: 16),
-              
+
               // Card Foto Bukti - Dipindah ke bawah
               Card(
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -1706,9 +1718,14 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: fotoStnk != null ? Colors.green : const Color(0xFFEBEC07),
-                                foregroundColor: fotoStnk != null ? Colors.white : const Color(0xFF2257C1),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: fotoStnk != null
+                                    ? Colors.green
+                                    : const Color(0xFFEBEC07),
+                                foregroundColor: fotoStnk != null
+                                    ? Colors.white
+                                    : const Color(0xFF2257C1),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -1724,8 +1741,11 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                                   }
                                 }
                               },
-                              icon: Icon(fotoStnk != null ? Icons.check_circle : Icons.camera_alt),
-                              label: Text(fotoStnk != null ? 'STNK ✓' : 'Foto STNK'),
+                              icon: Icon(fotoStnk != null
+                                  ? Icons.check_circle
+                                  : Icons.camera_alt),
+                              label: Text(
+                                  fotoStnk != null ? 'STNK ✓' : 'Foto STNK'),
                             ),
                           ),
                         ],
@@ -1736,9 +1756,14 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: fotoKir != null ? Colors.green : const Color(0xFFEBEC07),
-                                foregroundColor: fotoKir != null ? Colors.white : const Color(0xFF2257C1),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: fotoKir != null
+                                    ? Colors.green
+                                    : const Color(0xFFEBEC07),
+                                foregroundColor: fotoKir != null
+                                    ? Colors.white
+                                    : const Color(0xFF2257C1),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -1754,8 +1779,11 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                                   }
                                 }
                               },
-                              icon: Icon(fotoKir != null ? Icons.check_circle : Icons.camera_alt),
-                              label: Text(fotoKir != null ? 'KIR ✓' : 'Foto KIR'),
+                              icon: Icon(fotoKir != null
+                                  ? Icons.check_circle
+                                  : Icons.camera_alt),
+                              label:
+                                  Text(fotoKir != null ? 'KIR ✓' : 'Foto KIR'),
                             ),
                           ),
                         ],
@@ -1766,9 +1794,14 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: fotoSim1 != null ? Colors.green : const Color(0xFFEBEC07),
-                                foregroundColor: fotoSim1 != null ? Colors.white : const Color(0xFF2257C1),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: fotoSim1 != null
+                                    ? Colors.green
+                                    : const Color(0xFFEBEC07),
+                                foregroundColor: fotoSim1 != null
+                                    ? Colors.white
+                                    : const Color(0xFF2257C1),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -1784,8 +1817,11 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                                   }
                                 }
                               },
-                              icon: Icon(fotoSim1 != null ? Icons.check_circle : Icons.camera_alt),
-                              label: Text(fotoSim1 != null ? 'SIM 1 ✓' : 'Foto SIM 1'),
+                              icon: Icon(fotoSim1 != null
+                                  ? Icons.check_circle
+                                  : Icons.camera_alt),
+                              label: Text(
+                                  fotoSim1 != null ? 'SIM 1 ✓' : 'Foto SIM 1'),
                             ),
                           ),
                         ],
@@ -1796,9 +1832,14 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: fotoSim2 != null ? Colors.green : const Color(0xFFEBEC07),
-                                foregroundColor: fotoSim2 != null ? Colors.white : const Color(0xFF2257C1),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: fotoSim2 != null
+                                    ? Colors.green
+                                    : const Color(0xFFEBEC07),
+                                foregroundColor: fotoSim2 != null
+                                    ? Colors.white
+                                    : const Color(0xFF2257C1),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -1814,22 +1855,29 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                                   }
                                 }
                               },
-                              icon: Icon(fotoSim2 != null ? Icons.check_circle : Icons.camera_alt),
-                              label: Text(fotoSim2 != null ? 'SIM 2 ✓' : 'Foto SIM 2'),
+                              icon: Icon(fotoSim2 != null
+                                  ? Icons.check_circle
+                                  : Icons.camera_alt),
+                              label: Text(
+                                  fotoSim2 != null ? 'SIM 2 ✓' : 'Foto SIM 2'),
                             ),
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: fotoService != null ? Colors.green : const Color(0xFFEBEC07),
-                                foregroundColor: fotoService != null ? Colors.white : const Color(0xFF2257C1),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: fotoService != null
+                                    ? Colors.green
+                                    : const Color(0xFFEBEC07),
+                                foregroundColor: fotoService != null
+                                    ? Colors.white
+                                    : const Color(0xFF2257C1),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -1845,8 +1893,12 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                                   }
                                 }
                               },
-                              icon: Icon(fotoService != null ? Icons.check_circle : Icons.camera_alt),
-                              label: Text(fotoService != null ? 'Service ✓' : 'Foto Service'),
+                              icon: Icon(fotoService != null
+                                  ? Icons.check_circle
+                                  : Icons.camera_alt),
+                              label: Text(fotoService != null
+                                  ? 'Service ✓'
+                                  : 'Foto Service'),
                             ),
                           ),
                         ],
@@ -1857,9 +1909,14 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: fotoBbm != null ? Colors.green : const Color(0xFFEBEC07),
-                                foregroundColor: fotoBbm != null ? Colors.white : const Color(0xFF2257C1),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: fotoBbm != null
+                                    ? Colors.green
+                                    : const Color(0xFFEBEC07),
+                                foregroundColor: fotoBbm != null
+                                    ? Colors.white
+                                    : const Color(0xFF2257C1),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
@@ -1875,8 +1932,11 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                                   }
                                 }
                               },
-                              icon: Icon(fotoBbm != null ? Icons.check_circle : Icons.camera_alt),
-                              label: Text(fotoBbm != null ? 'BBM ✓' : 'Foto BBM'),
+                              icon: Icon(fotoBbm != null
+                                  ? Icons.check_circle
+                                  : Icons.camera_alt),
+                              label:
+                                  Text(fotoBbm != null ? 'BBM ✓' : 'Foto BBM'),
                             ),
                           ),
                         ],
@@ -1885,13 +1945,14 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Card Tanda Tangan Digital
               Card(
                 elevation: 2,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -1911,32 +1972,52 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: petugas1Signature != null ? Colors.green : const Color(0xFFEBEC07),
-                                foregroundColor: petugas1Signature != null ? Colors.white : const Color(0xFF2257C1),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: petugas1Signature != null
+                                    ? Colors.green
+                                    : const Color(0xFFEBEC07),
+                                foregroundColor: petugas1Signature != null
+                                    ? Colors.white
+                                    : const Color(0xFF2257C1),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              onPressed: () => showSignatureDialog('petugas1', 'Tanda Tangan Petugas 1'),
-                              icon: Icon(petugas1Signature != null ? Icons.check_circle : Icons.edit),
-                              label: Text(petugas1Signature != null ? 'Petugas 1 ✓' : 'Tanda Tangan Petugas 1'),
+                              onPressed: () => showSignatureDialog(
+                                  'petugas1', 'Tanda Tangan Petugas 1'),
+                              icon: Icon(petugas1Signature != null
+                                  ? Icons.check_circle
+                                  : Icons.edit),
+                              label: Text(petugas1Signature != null
+                                  ? 'Petugas 1 ✓'
+                                  : 'Tanda Tangan Petugas 1'),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: petugas2Signature != null ? Colors.green : const Color(0xFFEBEC07),
-                                foregroundColor: petugas2Signature != null ? Colors.white : const Color(0xFF2257C1),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: petugas2Signature != null
+                                    ? Colors.green
+                                    : const Color(0xFFEBEC07),
+                                foregroundColor: petugas2Signature != null
+                                    ? Colors.white
+                                    : const Color(0xFF2257C1),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              onPressed: () => showSignatureDialog('petugas2', 'Tanda Tangan Petugas 2'),
-                              icon: Icon(petugas2Signature != null ? Icons.check_circle : Icons.edit),
-                              label: Text(petugas2Signature != null ? 'Petugas 2 ✓' : 'Tanda Tangan Petugas 2'),
+                              onPressed: () => showSignatureDialog(
+                                  'petugas2', 'Tanda Tangan Petugas 2'),
+                              icon: Icon(petugas2Signature != null
+                                  ? Icons.check_circle
+                                  : Icons.edit),
+                              label: Text(petugas2Signature != null
+                                  ? 'Petugas 2 ✓'
+                                  : 'Tanda Tangan Petugas 2'),
                             ),
                           ),
                         ],
@@ -1947,32 +2028,52 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: managerSignature != null ? Colors.green : const Color(0xFFEBEC07),
-                                foregroundColor: managerSignature != null ? Colors.white : const Color(0xFF2257C1),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: managerSignature != null
+                                    ? Colors.green
+                                    : const Color(0xFFEBEC07),
+                                foregroundColor: managerSignature != null
+                                    ? Colors.white
+                                    : const Color(0xFF2257C1),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              onPressed: () => showSignatureDialog('manager', 'Tanda Tangan Manager Traffic'),
-                              icon: Icon(managerSignature != null ? Icons.check_circle : Icons.edit),
-                              label: Text(managerSignature != null ? 'Manager Traffic ✓' : 'Tanda Tangan Manager Traffic'),
+                              onPressed: () => showSignatureDialog(
+                                  'manager', 'Tanda Tangan Manager Traffic'),
+                              icon: Icon(managerSignature != null
+                                  ? Icons.check_circle
+                                  : Icons.edit),
+                              label: Text(managerSignature != null
+                                  ? 'Manager Traffic ✓'
+                                  : 'Tanda Tangan Manager Traffic'),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: jjcSignature != null ? Colors.green : const Color(0xFFEBEC07),
-                                foregroundColor: jjcSignature != null ? Colors.white : const Color(0xFF2257C1),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                backgroundColor: jjcSignature != null
+                                    ? Colors.green
+                                    : const Color(0xFFEBEC07),
+                                foregroundColor: jjcSignature != null
+                                    ? Colors.white
+                                    : const Color(0xFF2257C1),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              onPressed: () => showSignatureDialog('jjc', 'Tanda Tangan PT JJC'),
-                              icon: Icon(jjcSignature != null ? Icons.check_circle : Icons.edit),
-                              label: Text(jjcSignature != null ? 'PT JJC ✓' : 'Tanda Tangan PT JJC'),
+                              onPressed: () => showSignatureDialog(
+                                  'jjc', 'Tanda Tangan PT JJC'),
+                              icon: Icon(jjcSignature != null
+                                  ? Icons.check_circle
+                                  : Icons.edit),
+                              label: Text(jjcSignature != null
+                                  ? 'PT JJC ✓'
+                                  : 'Tanda Tangan PT JJC'),
                             ),
                           ),
                         ],
@@ -2013,9 +2114,9 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 60),
-              
+
               // Draft Management Buttons
               Row(
                 children: [
@@ -2030,11 +2131,11 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                       ),
                       onPressed: () async {
                         await _saveDraft();
-                        
+
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Row(
+                              content: const Row(
                                 children: [
                                   Icon(Icons.save, color: Colors.white),
                                   SizedBox(width: 8),
@@ -2047,7 +2148,7 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                                 ],
                               ),
                               backgroundColor: Colors.green,
-                              duration: Duration(seconds: 3),
+                              duration: const Duration(seconds: 3),
                               action: SnackBarAction(
                                 label: 'OK',
                                 textColor: Colors.white,
@@ -2075,26 +2176,27 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: Text('Hapus Draft'),
-                            content: Text('Apakah Anda yakin ingin menghapus draft ini?'),
+                            title: const Text('Hapus Draft'),
+                            content: const Text(
+                                'Apakah Anda yakin ingin menghapus draft ini?'),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: Text('Batal'),
+                                child: const Text('Batal'),
                               ),
                               TextButton(
                                 onPressed: () {
                                   _clearDraft();
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
+                                    const SnackBar(
                                       content: Text('Draft telah dihapus'),
                                       backgroundColor: Colors.red,
                                       duration: Duration(seconds: 2),
                                     ),
                                   );
                                 },
-                                child: Text('Hapus'),
+                                child: const Text('Hapus'),
                               ),
                             ],
                           ),
@@ -2106,9 +2208,9 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Tombol Cetak
               SizedBox(
                 width: double.infinity,
@@ -2127,8 +2229,9 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
                       // Cancel auto-save timer to prevent saving draft during PDF generation
                       _autoSaveTimer?.cancel();
                       _hasUnsavedChanges = false;
-                      _isFormSubmitted = true; // Prevent auto-save after form submission
-                      
+                      _isFormSubmitted =
+                          true; // Prevent auto-save after form submission
+
                       await generatePdf();
                       // _clearDraft() is already called inside generatePdf()
                     }
@@ -2148,5 +2251,3 @@ class _FormKamtibScreenState extends State<FormKamtibScreen> {
     );
   }
 }
-
-

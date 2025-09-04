@@ -14,41 +14,37 @@ class KendaraanScreen extends StatefulWidget {
   State<KendaraanScreen> createState() => _KendaraanScreenState();
 }
 
-class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderStateMixin {
+class _KendaraanScreenState extends State<KendaraanScreen>
+    with TickerProviderStateMixin {
   final List<Map<String, dynamic>> vehicleTypes = [
     {
       'name': 'Ambulance',
       'icon': Icons.medical_services_rounded,
       'color': const Color(0xFFE74C3C),
-
       'description': 'Unit medis darurat',
     },
     {
       'name': 'Derek',
       'icon': Icons.car_repair_rounded,
       'color': const Color(0xFF3498DB),
-
       'description': 'Unit evakuasi kendaraan',
     },
     {
       'name': 'Plaza',
       'icon': Icons.directions_car_rounded,
       'color': const Color(0xFF2ECC71),
-
       'description': 'Unit layanan tol',
     },
     {
       'name': 'Kamtib',
       'icon': Icons.security_rounded,
       'color': const Color(0xFF9B59B6),
-
       'description': 'Unit keamanan & ketertiban',
     },
     {
       'name': 'Rescue',
       'icon': Icons.emergency_rounded,
       'color': const Color(0xFFF39C12),
-
       'description': 'Unit penyelamatan',
     },
   ];
@@ -61,17 +57,17 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
+
     _buttonAnimationController = AnimationController(
       duration: const Duration(milliseconds: 200),
       vsync: this,
     );
-    
+
     _cardAnimations = List.generate(
       vehicleTypes.length,
       (index) => Tween<double>(
@@ -88,10 +84,10 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
         ),
       ),
     );
-    
+
     _animationController.forward();
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
@@ -103,7 +99,7 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
     // Cek apakah sudah ada draft untuk form ini
     final draftKey = '${kategori.toLowerCase()}_draft';
     final existingDraft = DraftService.loadDraft(draftKey);
-    
+
     if (existingDraft != null) {
       // Jika ada draft, tampilkan dialog konfirmasi
       _showDraftExistsDialog(kategori, draftKey, existingDraft);
@@ -113,12 +109,13 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
     }
   }
 
-  void _showDraftExistsDialog(String kategori, String draftKey, Map<String, dynamic> draftData) {
+  void _showDraftExistsDialog(
+      String kategori, String draftKey, Map<String, dynamic> draftData) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
+        title: const Row(
           children: [
             Icon(Icons.save_rounded, color: Color(0xFF2196F3)),
             SizedBox(width: 8),
@@ -130,13 +127,13 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Anda memiliki draft Form $kategori yang tersimpan.'),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Petugas: ${draftData['petugas1'] ?? 'Tidak ada'}',
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
               'Apa yang ingin Anda lakukan?',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
@@ -145,15 +142,16 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Batal'),
+            child: const Text('Batal'),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               _openExistingDraft(kategori, draftKey, draftData);
             },
-            style: TextButton.styleFrom(foregroundColor: Color(0xFF2196F3)),
-            child: Text('Buka Draft'),
+            style:
+                TextButton.styleFrom(foregroundColor: const Color(0xFF2196F3)),
+            child: const Text('Buka Draft'),
           ),
           TextButton(
             onPressed: () {
@@ -161,41 +159,46 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
               _createNewForm(kategori);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.orange),
-            child: Text('Buat Form Baru'),
+            child: const Text('Buat Form Baru'),
           ),
         ],
       ),
     );
   }
 
-
-
-  void _openExistingDraft(String kategori, String draftKey, Map<String, dynamic> draftData) {
+  void _openExistingDraft(
+      String kategori, String draftKey, Map<String, dynamic> draftData) {
     Widget? targetScreen;
-    
+
     switch (kategori) {
       case 'Ambulance':
-        targetScreen = ambulance.FormAmbulanceScreen(draftData: draftData, draftKey: draftKey);
+        targetScreen = ambulance.FormAmbulanceScreen(
+            draftData: draftData, draftKey: draftKey);
         break;
       case 'Derek':
-        targetScreen = FormDerekScreen(draftData: draftData, draftKey: draftKey);
+        targetScreen =
+            FormDerekScreen(draftData: draftData, draftKey: draftKey);
         break;
       case 'Kamtib':
-        targetScreen = FormKamtibScreen(draftData: draftData, draftKey: draftKey);
+        targetScreen =
+            FormKamtibScreen(draftData: draftData, draftKey: draftKey);
         break;
       case 'Plaza':
-        targetScreen = FormPlazaScreen(draftData: draftData, draftKey: draftKey);
+        targetScreen =
+            FormPlazaScreen(draftData: draftData, draftKey: draftKey);
         break;
       case 'Rescue':
-        targetScreen = FormRescueScreen(draftData: draftData, draftKey: draftKey);
+        targetScreen =
+            FormRescueScreen(draftData: draftData, draftKey: draftKey);
         break;
     }
-    
+
     if (targetScreen != null) {
       Navigator.push(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => targetScreen!,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              targetScreen!,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(1.0, 0.0);
             const end = Offset.zero;
@@ -221,7 +224,7 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
 
   void _createNewForm(String kategori) {
     Widget? targetScreen;
-    
+
     switch (kategori) {
       case 'Ambulance':
         targetScreen = const ambulance.FormAmbulanceScreen();
@@ -239,12 +242,13 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
         targetScreen = const FormRescueScreen();
         break;
     }
-    
+
     if (targetScreen != null) {
       Navigator.push(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => targetScreen!,
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              targetScreen!,
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(1.0, 0.0);
             const end = Offset.zero;
@@ -291,8 +295,9 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back_ios_new_rounded, 
-                      color: Colors.grey[700], 
+                    icon: Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.grey[700],
                       size: 20,
                     ),
                     onPressed: () => Navigator.pop(context),
@@ -324,23 +329,24 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
                   curve: Curves.easeOutCubic,
                 )),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                   padding: const EdgeInsets.all(20),
-                                     decoration: BoxDecoration(
-                     color: Colors.white,
-                     borderRadius: BorderRadius.circular(16),
-                     border: Border.all(
-                       color: Colors.grey[200]!,
-                       width: 1,
-                     ),
-                     boxShadow: [
-                       BoxShadow(
-                         color: Colors.black.withValues(alpha: 0.05),
-                         blurRadius: 8,
-                         offset: const Offset(0, 4),
-                       ),
-                     ],
-                   ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.grey[200]!,
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                   child: Column(
                     children: [
                       const Icon(
@@ -378,7 +384,7 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
                   itemBuilder: (context, index) {
                     final vehicle = vehicleTypes[index];
                     final isSelected = selectedKategori == vehicle['name'];
-                    
+
                     return ScaleTransition(
                       scale: _cardAnimations[index],
                       child: GestureDetector(
@@ -404,53 +410,64 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeOutCubic,
                           transform: Matrix4.identity(),
-                                                                                                           decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFFEBEC07) : Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isSelected ? const Color(0xFF2257C1) : Colors.grey[200]!,
-                                width: 2,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: isSelected 
-                                    ? const Color(0xFFEBEC07).withValues(alpha: 0.3)
-                                    : Colors.black.withValues(alpha: 0.05),
-                                  blurRadius: isSelected ? 12 : 6,
-                                  offset: Offset(0, isSelected ? 6 : 3),
-                                ),
-                              ],
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFFEBEC07)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isSelected
+                                  ? const Color(0xFF2257C1)
+                                  : Colors.grey[200]!,
+                              width: 2,
                             ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isSelected
+                                    ? const Color(0xFFEBEC07)
+                                        .withValues(alpha: 0.3)
+                                    : Colors.black.withValues(alpha: 0.05),
+                                blurRadius: isSelected ? 12 : 6,
+                                offset: Offset(0, isSelected ? 6 : 3),
+                              ),
+                            ],
+                          ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                                                                                           Icon(
+                              Icon(
                                 vehicle['icon'],
                                 size: 40,
-                                color: isSelected ? const Color(0xFF2257C1) : vehicle['color'],
+                                color: isSelected
+                                    ? const Color(0xFF2257C1)
+                                    : vehicle['color'],
                               ),
                               const SizedBox(height: 12),
-                                                             Text(
-                                 vehicle['name'],
-                                 style: TextStyle(
-                                   fontSize: 16,
-                                   fontWeight: FontWeight.w600,
-                                   color: isSelected ? const Color(0xFF2257C1) : Colors.grey[800],
-                                 ),
-                               ),
+                              Text(
+                                vehicle['name'],
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? const Color(0xFF2257C1)
+                                      : Colors.grey[800],
+                                ),
+                              ),
                               const SizedBox(height: 4),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                                                 child: Text(
-                                   vehicle['description'],
-                                   style: TextStyle(
-                                     fontSize: 11,
-                                     color: isSelected 
-                                       ? const Color(0xFF2257C1).withValues(alpha: 0.8)
-                                       : Colors.grey[600],
-                                   ),
-                                   textAlign: TextAlign.center,
-                                 ),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
+                                child: Text(
+                                  vehicle['description'],
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: isSelected
+                                        ? const Color(0xFF2257C1)
+                                            .withValues(alpha: 0.8)
+                                        : Colors.grey[600],
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ],
                           ),
@@ -489,19 +506,22 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
                           duration: const Duration(milliseconds: 300),
                           width: double.infinity,
                           height: 60,
-                                                                                                           decoration: BoxDecoration(
-                              color: selectedKategori != null
+                          decoration: BoxDecoration(
+                            color: selectedKategori != null
                                 ? const Color(0xFFEBEC07)
                                 : Colors.grey[300],
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: selectedKategori != null ? [
-                                BoxShadow(
-                                  color: const Color(0xFFEBEC07).withValues(alpha: 0.3),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ] : [],
-                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: selectedKategori != null
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(0xFFEBEC07)
+                                          .withValues(alpha: 0.3),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ]
+                                : [],
+                          ),
                           child: Material(
                             color: Colors.transparent,
                             child: InkWell(
@@ -515,21 +535,21 @@ class _KendaraanScreenState extends State<KendaraanScreen> with TickerProviderSt
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                                                           Text(
-                                         selectedKategori != null
-                                           ? 'Lanjutkan'
-                                           : 'Pilih Kendaraan',
-                                         style: TextStyle(
-                                           fontWeight: FontWeight.w600,
-                                           fontSize: 16,
-                                           color: selectedKategori != null
-                                             ? const Color(0xFF2257C1)
-                                             : Colors.grey[600],
-                                         ),
-                                       ),
+                                    Text(
+                                      selectedKategori != null
+                                          ? 'Lanjutkan'
+                                          : 'Pilih Kendaraan',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        color: selectedKategori != null
+                                            ? const Color(0xFF2257C1)
+                                            : Colors.grey[600],
+                                      ),
+                                    ),
                                     if (selectedKategori != null) ...[
                                       const SizedBox(width: 8),
-                                                                                                                   const Icon(
+                                      const Icon(
                                         Icons.arrow_forward_rounded,
                                         color: Color(0xFF2257C1),
                                         size: 20,

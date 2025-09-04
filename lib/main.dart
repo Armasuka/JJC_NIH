@@ -14,23 +14,23 @@ import 'services/backup_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize services in parallel for faster loading
   await Future.wait([
     initializeDateFormatting('id_ID', null),
     Hive.initFlutter(),
     NotificationService().initialize(),
   ]);
-  
+
   // Open Hive boxes
   await Future.wait([
     Hive.openBox('inspection_history'),
     Hive.openBox('drafts'),
   ]);
-  
+
   // Check and perform auto-backup if needed
   _checkAutoBackup();
-  
+
   final prefs = await SharedPreferences.getInstance();
   final onboardingDone = prefs.getBool('onboarding_done') ?? false;
   runApp(JasaMargaApp(onboardingDone: onboardingDone));
@@ -46,7 +46,8 @@ class JasaMargaApp extends StatefulWidget {
 
 class _JasaMargaAppState extends State<JasaMargaApp> {
   String? _sharedFilePath;
-  static const platform = MethodChannel('com.example.jasamarga_inspeksi/file_intent');
+  static const platform =
+      MethodChannel('com.example.jasamarga_inspeksi/file_intent');
 
   @override
   void initState() {
@@ -109,12 +110,13 @@ class _JasaMargaAppState extends State<JasaMargaApp> {
   @override
   Widget build(BuildContext context) {
     print('Building app with sharedFilePath: $_sharedFilePath');
-    
+
     return MaterialApp(
       title: 'JASAMARGA INSPECTOR',
       theme: ThemeData(
         primaryColor: const Color(0xFFEBEC07),
-        scaffoldBackgroundColor: const Color(0xFF2257C1), // Set background to match splash
+        scaffoldBackgroundColor:
+            const Color(0xFF2257C1), // Set background to match splash
         textTheme: GoogleFonts.poppinsTextTheme(),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
@@ -159,8 +161,8 @@ class _JasaMargaAppState extends State<JasaMargaApp> {
           ),
         ),
       ),
-      home: _sharedFilePath != null 
-          ? _buildRestoreScreen() 
+      home: _sharedFilePath != null
+          ? _buildRestoreScreen()
           : const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
@@ -168,16 +170,16 @@ class _JasaMargaAppState extends State<JasaMargaApp> {
 
   Widget _buildRestoreScreen() {
     if (_sharedFilePath == null) return const SplashScreen();
-    
+
     final file = File(_sharedFilePath!);
     final fileName = file.path.split('/').last;
     final fileExtension = fileName.split('.').last.toLowerCase();
-    
+
     // Cek apakah file adalah backup yang valid
     if (fileExtension != 'zip' && fileExtension != 'json') {
       return _buildInvalidFileScreen();
     }
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
@@ -247,7 +249,8 @@ class _JasaMargaAppState extends State<JasaMargaApp> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2257C1),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -331,15 +334,16 @@ class _JasaMargaAppState extends State<JasaMargaApp> {
                   _sharedFilePath = null;
                 });
               },
-              child: const Text('Kembali ke Aplikasi'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2257C1),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
+              child: const Text('Kembali ke Aplikasi'),
             ),
           ],
         ),
@@ -355,7 +359,7 @@ void _checkAutoBackup() async {
       print('Performing auto-backup...');
       await BackupService.performAutoBackup();
     }
-    
+
     // Cleanup old backups
     await BackupService.cleanupOldBackups();
   } catch (e) {
