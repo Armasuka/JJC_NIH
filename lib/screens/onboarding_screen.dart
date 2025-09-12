@@ -16,8 +16,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<_OnboardData> _pages = [
     const _OnboardData(
       image: 'assets/onboard2.png',
-      title: 'Selamat datang di JJC OPERASIONAL',
-      subtitle: 'Sistem Inspeksi Kendaraan Terpadu untuk Jalan Layang Cikampek - PT Jasamarga Jalanlayang Cikampek',
+      title: 'Selamat datang aplikasi di JJC OPERASIONAL',
+      subtitle:
+          'Sistem Inspeksi Kendaraan Terpadu untuk\nJalan Layang MBZ\nPT Jasamarga Jalanlayang Cikampek',
     ),
     const _OnboardData(
       image: 'assets/onboard1.png',
@@ -27,7 +28,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     const _OnboardData(
       image: 'assets/onboard3.png',
       title: 'Lebih cepat & efisien',
-      subtitle: 'Catat inspeksi langsung di lapangan, data tersimpan aman & rapi secara digital.',
+      subtitle:
+          'Catat inspeksi langsung di lapangan, data tersimpan aman & rapi secara digital.',
     ),
   ];
 
@@ -35,10 +37,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_done', true);
     if (!mounted) return;
-    
+
     // Tampilkan tutorial setelah onboarding untuk pengguna baru
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const TutorialScreen(isFirstTime: true)),
+      MaterialPageRoute(
+          builder: (_) => const TutorialScreen(isFirstTime: true)),
     );
   }
 
@@ -57,7 +60,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 itemBuilder: (context, i) {
                   final data = _pages[i];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 16),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -102,13 +106,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    textStyle: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   onPressed: () {
                     if (_currentPage == _pages.length - 1) {
                       _finishOnboarding();
                     } else {
-                      _pageController.nextPage(duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+                      _pageController.nextPage(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeInOut);
                     }
                   },
                   child: const Text('Lanjut'),
@@ -149,5 +156,6 @@ class _OnboardData {
   final String image;
   final String title;
   final String subtitle;
-  const _OnboardData({required this.image, required this.title, required this.subtitle});
-} 
+  const _OnboardData(
+      {required this.image, required this.title, required this.subtitle});
+}

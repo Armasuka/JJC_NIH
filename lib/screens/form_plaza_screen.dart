@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:async';
@@ -14,6 +13,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:signature/signature.dart';
 import '../services/draft_service.dart';
 import '../services/pdf_storage_service.dart';
+import '../utils/logger.dart';
 
 import 'success_screen.dart';
 
@@ -1177,6 +1177,10 @@ class _FormPlazaScreenState extends State<FormPlazaScreen> {
             ),
             pw.SizedBox(height: 6),
 
+            // Kelengkapan Petugas
+            buildTableSection('KELENGKAPAN PETUGAS', kelengkapanPetugas),
+            pw.SizedBox(height: 8),
+
             // Kelengkapan Sarana
             buildTableSection('KELENGKAPAN SARANA', kelengkapanSarana),
             pw.SizedBox(height: 8),
@@ -1520,16 +1524,7 @@ class _FormPlazaScreenState extends State<FormPlazaScreen> {
         }
       }
 
-      // Generate and print PDF with delay
-      await Future.delayed(const Duration(milliseconds: 500));
-      await Printing.layoutPdf(onLayout: (format) => pdf.save());
-
-      // Dismiss loading dialog after successful PDF generation
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-
-      // Simpan riwayat inspeksi ke Hive
+      // Simpan riwayat inspeksi ke Hive terlebih dahulu
       final box = Hive.box('inspection_history');
       final id = DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -1548,7 +1543,35 @@ class _FormPlazaScreenState extends State<FormPlazaScreen> {
         await downloadsDir.create(recursive: true);
       }
       final downloadFile = File('${downloadsDir.path}/$fileName');
-      await downloadFile.writeAsBytes(await pdf.save());
+      final pdfBytes = await pdf.save();
+      await downloadFile.writeAsBytes(pdfBytes);
+
+      // Dismiss loading dialog after successful PDF generation
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Generate and print PDF with delay and better error handling
+      try {
+        await Future.delayed(const Duration(milliseconds: 500));
+        await Printing.layoutPdf(
+          onLayout: (format) => pdfBytes,
+          name: fileName,
+        );
+      } catch (printError) {
+        Logger.error('Printing error: $printError');
+        // Show error but don't fail the entire process
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'PDF berhasil disimpan, tetapi gagal mencetak: $printError'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      }
 
       box.add({
         'id': id,

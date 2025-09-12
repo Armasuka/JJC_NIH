@@ -20,7 +20,7 @@ class _TutorialScreenState extends State<TutorialScreen>
 
   final List<TutorialStep> _tutorialSteps = [
     TutorialStep(
-      title: 'Selamat Datang di JJC OPERASIONAL',
+      title: 'Selamat Datang di aplikasi JJC OPERASIONAL',
       description:
           'Aplikasi inspeksi kendaraan terpadu untuk Jalan Layang MBZ. Mari kita pelajari cara menggunakannya.',
       icon: Icons.home_rounded,

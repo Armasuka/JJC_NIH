@@ -291,3 +291,8 @@ Data → Generate → Local → Report → Export
 - Manual backup/restore functionality
 - File sharing untuk transfer data antar device
 - Draft management untuk mencegah kehilangan data
+
+
+
+
+

@@ -638,11 +638,7 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
       }
       final sizeInKB = (fileSize / 1024).toStringAsFixed(1);
 
-      // Cek ukuran file (maksimal 10MB)
-      if (fileSize > 10 * 1024 * 1024) {
-        throw Exception(
-            'File terlalu besar (${(fileSize / 1024 / 1024).toStringAsFixed(1)} MB). Maksimal 10MB.');
-      }
+      // Limitasi ukuran file dihapus untuk memungkinkan restore file backup yang lebih besar
 
       // Cek ukuran file (minimal 10 bytes)
       if (fileSize < 10) {
@@ -837,6 +833,14 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
           final updatedItem = Map<String, dynamic>.from(item);
           updatedItem['id'] = newId;
 
+          // Update pdfPath untuk mencocokkan ID baru jika ada
+          if (updatedItem['pdfPath'] != null) {
+            final appDir = await getApplicationDocumentsDirectory();
+            final newPdfPath =
+                '${appDir.path}/inspection_pdfs/inspeksi_$newId.pdf';
+            updatedItem['pdfPath'] = newPdfPath;
+          }
+
           // Tambahkan timestamp restore untuk tracking
           updatedItem['restored_at'] = DateTime.now().toIso8601String();
           updatedItem['restore_mode'] = mode;
@@ -873,6 +877,9 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
               final newId = '${restorePrefix}_$originalId';
               final newFileName = 'inspeksi_$newId.pdf';
 
+              print('Restoring PDF: $fileName -> $newFileName');
+              print('Original ID: $originalId, New ID: $newId');
+
               // Simpan PDF menggunakan PdfStorageService
               final appDir = await getApplicationDocumentsDirectory();
               final pdfDir = Directory('${appDir.path}/inspection_pdfs');
@@ -881,6 +888,9 @@ Jangan edit atau hapus file ini jika ingin data tetap aman.
               }
               final pdfFile = File('${pdfDir.path}/$newFileName');
               await pdfFile.writeAsBytes(pdfBytes);
+
+              print('PDF saved successfully to: ${pdfFile.path}');
+              print('PDF file size: ${pdfBytes.length} bytes');
 
               restoredPdfCount++;
             } catch (e) {

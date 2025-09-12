@@ -1455,16 +1455,7 @@ class _FormRescueScreenState extends State<FormRescueScreen> {
         }
       }
 
-      // Generate and print PDF with delay
-      await Future.delayed(const Duration(milliseconds: 500));
-      await Printing.layoutPdf(onLayout: (format) => pdf.save());
-
-      // Dismiss loading dialog after successful PDF generation
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-
-      // Simpan riwayat inspeksi ke Hive
+      // Simpan riwayat inspeksi ke Hive terlebih dahulu
       final box = Hive.box('inspection_history');
       final id = DateTime.now().millisecondsSinceEpoch.toString();
 
@@ -1483,7 +1474,35 @@ class _FormRescueScreenState extends State<FormRescueScreen> {
         await downloadsDir.create(recursive: true);
       }
       final downloadFile = File('${downloadsDir.path}/$fileName');
-      await downloadFile.writeAsBytes(await pdf.save());
+      final pdfBytes = await pdf.save();
+      await downloadFile.writeAsBytes(pdfBytes);
+
+      // Dismiss loading dialog after successful PDF generation
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Generate and print PDF with delay and better error handling
+      try {
+        await Future.delayed(const Duration(milliseconds: 500));
+        await Printing.layoutPdf(
+          onLayout: (format) => pdfBytes,
+          name: fileName,
+        );
+      } catch (printError) {
+        Logger.error('Printing error: $printError');
+        // Show error but don't fail the entire process
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'PDF berhasil disimpan, tetapi gagal mencetak: $printError'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      }
 
       box.add({
         'id': id,
