@@ -160,6 +160,69 @@ class _JasaMargaAppState extends State<JasaMargaApp> {
             fontSize: 20,
           ),
         ),
+        datePickerTheme: DatePickerThemeData(
+          backgroundColor: Colors.white,
+          headerBackgroundColor: const Color(0xFFEBEC07),
+          headerForegroundColor: const Color(0xFF2257C1),
+          weekdayStyle: const TextStyle(
+            color: Color(0xFF2257C1),
+            fontWeight: FontWeight.w600,
+          ),
+          dayStyle: const TextStyle(
+            color: Colors.black87,
+            fontSize: 14,
+          ),
+          yearStyle: const TextStyle(
+            color: Colors.black87,
+            fontSize: 16,
+          ),
+          rangePickerBackgroundColor: Colors.white,
+          rangePickerHeaderBackgroundColor: const Color(0xFFEBEC07),
+          rangePickerHeaderForegroundColor: const Color(0xFF2257C1),
+          rangeSelectionBackgroundColor: const Color(0xFFEBEC07).withOpacity(0.3),
+          rangeSelectionOverlayColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) {
+              return const Color(0xFFEBEC07).withOpacity(0.5);
+            }
+            return const Color(0xFFEBEC07).withOpacity(0.2);
+          }),
+          todayBackgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) {
+              return const Color(0xFF2257C1);
+            }
+            return const Color(0xFFEBEC07);
+          }),
+          todayForegroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) {
+              return Colors.white;
+            }
+            return const Color(0xFF2257C1);
+          }),
+          dayBackgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) {
+              return const Color(0xFF2257C1);
+            }
+            return Colors.transparent;
+          }),
+          dayForegroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) {
+              return Colors.white;
+            }
+            if (states.contains(WidgetState.disabled)) {
+              return Colors.grey;
+            }
+            return Colors.black87;
+          }),
+          dayOverlayColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.hovered)) {
+              return const Color(0xFFEBEC07).withOpacity(0.4);
+            }
+            if (states.contains(WidgetState.pressed)) {
+              return const Color(0xFFEBEC07).withOpacity(0.6);
+            }
+            return Colors.transparent;
+          }),
+        ),
       ),
       home: _sharedFilePath != null
           ? _buildRestoreScreen()

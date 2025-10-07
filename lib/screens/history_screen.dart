@@ -40,6 +40,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     'Hari Ini',
     'Minggu Ini',
     'Bulan Ini',
+    'Bulan Lalu',
+    '3 Bulan Terakhir',
+    '6 Bulan Terakhir',
     'Tahun Ini',
     'Kustom',
   ];
@@ -130,6 +133,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
           break;
         case 'Bulan Ini':
           startDate = DateTime(now.year, now.month, 1);
+          endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+          break;
+        case 'Bulan Lalu':
+          final lastMonth = DateTime(now.year, now.month - 1, 1);
+          startDate = lastMonth;
+          endDate = DateTime(lastMonth.year, lastMonth.month + 1, 0, 23, 59, 59);
+          break;
+        case '3 Bulan Terakhir':
+          startDate = DateTime(now.year, now.month - 2, 1);
+          endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+          break;
+        case '6 Bulan Terakhir':
+          startDate = DateTime(now.year, now.month - 5, 1);
           endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
           break;
         case 'Tahun Ini':
@@ -348,17 +364,87 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         ),
 
                         // Custom Date Range Display
-                        if (_selectedStartDate != null &&
-                            _selectedEndDate != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(
-                              'Periode: ${DateFormat('dd/MM/yyyy').format(_selectedStartDate!)} - ${DateFormat('dd/MM/yyyy').format(_selectedEndDate!)}',
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
+                        if (_selectedTimeFilter == 'Kustom')
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Main date picker button
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: GestureDetector(
+                                  onTap: _showDateRangePicker,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEBEC07).withOpacity(0.2),
+                                      border: Border.all(
+                                        color: const Color(0xFF2257C1).withOpacity(0.3),
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.date_range,
+                                          size: 16,
+                                          color: const Color(0xFF2257C1),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          _selectedStartDate != null && _selectedEndDate != null
+                                              ? 'Periode: ${DateFormat('dd/MM/yyyy').format(_selectedStartDate!)} - ${DateFormat('dd/MM/yyyy').format(_selectedEndDate!)}'
+                                              : 'Tap untuk pilih tanggal',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: const Color(0xFF2257C1),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          Icons.edit,
+                                          size: 14,
+                                          color: const Color(0xFF2257C1).withOpacity(0.7),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
+                              
+                              // Quick month selection buttons
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Pilihan Cepat:',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 4,
+                                      children: [
+                                        _buildQuickDateButton('Bulan Ini'),
+                                        _buildQuickDateButton('Bulan Lalu'),
+                                        _buildQuickDateButton('3 Bulan'),
+                                        _buildQuickDateButton('6 Bulan'),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                       ],
                     ),
@@ -1104,21 +1190,151 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> _showDateRangePicker() async {
-    final DateTimeRange? picked = await showDateRangePicker(
-      context: context,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-      initialDateRange: _selectedStartDate != null && _selectedEndDate != null
-          ? DateTimeRange(start: _selectedStartDate!, end: _selectedEndDate!)
-          : null,
-    );
+    try {
+      // Set initial date range untuk navigasi yang lebih baik
+      DateTime initialStart = _selectedStartDate ?? DateTime.now().subtract(const Duration(days: 30));
+      DateTime initialEnd = _selectedEndDate ?? DateTime.now();
+      
+      final DateTimeRange? picked = await showDateRangePicker(
+        context: context,
+        firstDate: DateTime(2020, 1, 1), // Lebih spesifik dengan tanggal lengkap
+        lastDate: DateTime.now().add(const Duration(days: 1)), // Tambah 1 hari untuk fleksibilitas
+        initialDateRange: DateTimeRange(start: initialStart, end: initialEnd),
+        // Improved navigation settings
+        currentDate: DateTime.now(),
+        helpText: 'Pilih Rentang Tanggal Inspeksi',
+        cancelText: 'Batal',
+        confirmText: 'Pilih',
+        saveText: 'Simpan',
+        errorFormatText: 'Format tanggal tidak valid',
+        errorInvalidText: 'Tanggal tidak valid',
+        errorInvalidRangeText: 'Rentang tanggal tidak valid',
+        fieldStartHintText: 'Tanggal Mulai (dd/mm/yyyy)',
+        fieldEndHintText: 'Tanggal Selesai (dd/mm/yyyy)',
+        fieldStartLabelText: 'Dari Tanggal',
+        fieldEndLabelText: 'Sampai Tanggal',
+        // Enhanced builder with better month/year navigation
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              // Improved color scheme for better visibility
+              colorScheme: Theme.of(context).colorScheme.copyWith(
+                primary: const Color(0xFF2257C1),
+                onPrimary: Colors.white,
+                surface: Colors.white,
+                onSurface: Colors.black87,
+                secondary: const Color(0xFFEBEC07),
+                onSecondary: const Color(0xFF2257C1),
+                tertiary: const Color(0xFF2257C1).withOpacity(0.1),
+              ),
+              // Improve date picker theme specifically for month/year navigation
+              datePickerTheme: Theme.of(context).datePickerTheme.copyWith(
+                headerBackgroundColor: const Color(0xFFEBEC07),
+                headerForegroundColor: const Color(0xFF2257C1),
+                headerHeadlineStyle: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2257C1),
+                ),
+                headerHelpStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF2257C1),
+                ),
+                weekdayStyle: const TextStyle(
+                  color: Color(0xFF2257C1),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+                yearStyle: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+                yearBackgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return const Color(0xFF2257C1);
+                  }
+                  return Colors.transparent;
+                }),
+                yearForegroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(WidgetState.selected)) {
+                    return Colors.white;
+                  }
+                  return Colors.black87;
+                }),
+                yearOverlayColor: WidgetStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(WidgetState.hovered)) {
+                    return const Color(0xFFEBEC07).withOpacity(0.4);
+                  }
+                  if (states.contains(WidgetState.pressed)) {
+                    return const Color(0xFFEBEC07).withOpacity(0.6);
+                  }
+                  return Colors.transparent;
+                }),
+              ),
+            ),
+            // Wrap with custom container untuk navigasi bulan yang lebih baik
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.9,
+              height: MediaQuery.of(context).size.height * 0.7,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: child!,
+            ),
+          );
+        },
+      );
 
-    if (picked != null) {
-      setState(() {
-        _selectedStartDate = picked.start;
-        _selectedEndDate = picked.end;
-        _filterData();
-      });
+      if (picked != null) {
+        setState(() {
+          _selectedStartDate = picked.start;
+          _selectedEndDate = picked.end;
+          _filterData();
+        });
+
+        // Show success feedback
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Filter tanggal dipilih: ${DateFormat('dd/MM/yyyy').format(picked.start)} - ${DateFormat('dd/MM/yyyy').format(picked.end)}',
+              ),
+              backgroundColor: const Color(0xFF2257C1),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } else if (_selectedStartDate == null || _selectedEndDate == null) {
+        // If user cancels and no dates were previously selected, switch back to 'Semua'
+        setState(() {
+          _selectedTimeFilter = 'Semua';
+          _filterData();
+        });
+      }
+    } catch (e) {
+      // Handle any errors
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal membuka pemilih tanggal: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() {
+          _selectedTimeFilter = 'Semua';
+          _filterData();
+        });
+      }
     }
   }
 
@@ -1941,6 +2157,75 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         );
       }
+    }
+  }
+
+  Widget _buildQuickDateButton(String label) {
+    return GestureDetector(
+      onTap: () => _setQuickDateRange(label),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.grey[100],
+          border: Border.all(color: Colors.grey.shade300),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            color: Color(0xFF2257C1),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _setQuickDateRange(String period) {
+    final now = DateTime.now();
+    DateTime startDate;
+    DateTime endDate;
+
+    switch (period) {
+      case 'Bulan Ini':
+        startDate = DateTime(now.year, now.month, 1);
+        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+        break;
+      case 'Bulan Lalu':
+        final lastMonth = DateTime(now.year, now.month - 1, 1);
+        startDate = lastMonth;
+        endDate = DateTime(lastMonth.year, lastMonth.month + 1, 0, 23, 59, 59);
+        break;
+      case '3 Bulan':
+        startDate = DateTime(now.year, now.month - 2, 1);
+        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+        break;
+      case '6 Bulan':
+        startDate = DateTime(now.year, now.month - 5, 1);
+        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+        break;
+      default:
+        return;
+    }
+
+    setState(() {
+      _selectedStartDate = startDate;
+      _selectedEndDate = endDate;
+      _filterData();
+    });
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Filter $period dipilih: ${DateFormat('dd/MM/yyyy').format(startDate)} - ${DateFormat('dd/MM/yyyy').format(endDate)}',
+          ),
+          backgroundColor: const Color(0xFF2257C1),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 }
